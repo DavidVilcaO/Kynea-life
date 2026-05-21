@@ -2,7 +2,22 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Music2, Globe } from 'lucide-react';
+import { Eye, EyeOff, Music2, Globe, Zap } from 'lucide-react';
+
+const DEMO_ACCOUNTS = [
+  {
+    label: 'Academia Ritmo Latino',
+    desc: 'Academia · 12 clases activas',
+    emoji: '🏫',
+    href: '/dashboard',
+  },
+  {
+    label: 'Sofía Vega',
+    desc: 'Profesora independiente · Heels & Jazz Funk',
+    emoji: '💃',
+    href: '/dashboard',
+  },
+];
 
 function AuthContent() {
   const router = useRouter();
@@ -16,8 +31,12 @@ function AuthContent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (userType === 'profesor' && authMode === 'register') {
-      router.push('/onboarding');
+    if (userType === 'profesor') {
+      if (authMode === 'register') {
+        router.push('/onboarding');
+      } else {
+        router.push('/dashboard');
+      }
     } else {
       router.push('/buscar');
     }
@@ -35,6 +54,31 @@ function AuthContent() {
             <span className="text-2xl font-black text-gray-900">kynea</span>
           </Link>
           <p className="text-gray-500 mt-2 text-sm">Donde la pasión por la danza cobra vida</p>
+        </div>
+
+        {/* Demo access card */}
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="w-4 h-4 text-amber-600" />
+            <span className="text-sm font-bold text-amber-800">Acceso demo — sin registro</span>
+          </div>
+          <p className="text-xs text-amber-700 mb-3">Entra directamente al panel de profesor para explorar todas las funciones.</p>
+          <div className="flex flex-col gap-2">
+            {DEMO_ACCOUNTS.map(acc => (
+              <Link
+                key={acc.label}
+                href={acc.href}
+                className="flex items-center gap-3 bg-white border border-amber-200 hover:border-amber-400 rounded-xl px-4 py-3 transition-colors group"
+              >
+                <span className="text-xl">{acc.emoji}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-900 group-hover:text-purple-700 transition-colors">{acc.label}</p>
+                  <p className="text-xs text-gray-500">{acc.desc}</p>
+                </div>
+                <span className="text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-1 rounded-lg">Demo</span>
+              </Link>
+            ))}
+          </div>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
@@ -72,7 +116,10 @@ function AuthContent() {
             </div>
 
             {/* Google button */}
-            <button className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition-colors mb-4">
+            <button
+              onClick={() => userType === 'profesor' ? router.push('/dashboard') : router.push('/buscar')}
+              className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 hover:border-purple-300 hover:bg-purple-50 text-gray-700 font-semibold py-3 rounded-xl transition-colors mb-4"
+            >
               <Globe className="w-5 h-5" />
               Continuar con Google
             </button>
@@ -182,6 +229,12 @@ function AuthContent() {
                 {authMode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
               </button>
             </form>
+
+            {userType === 'profesor' && (
+              <p className="text-center text-xs text-purple-600 mt-3 font-medium">
+                {authMode === 'login' ? '→ Serás llevado a tu panel de gestión' : '→ Completarás tu perfil en el siguiente paso'}
+              </p>
+            )}
 
             <p className="text-center text-xs text-gray-500 mt-4">
               {authMode === 'login' ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
