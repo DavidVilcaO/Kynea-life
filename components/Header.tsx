@@ -43,6 +43,16 @@ export default function Header({ transparent = false }: { transparent?: boolean 
           {/* CTA buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Link
+              href="/dashboard"
+              className={`text-sm font-medium px-4 py-2 rounded-lg transition-colors ${
+                transparent
+                  ? 'text-white/80 hover:text-white'
+                  : 'text-gray-500 hover:text-purple-600'
+              }`}
+            >
+              Mi panel
+            </Link>
+            <Link
               href="/auth"
               className={`text-sm font-medium px-4 py-2 rounded-lg transition-colors ${
                 transparent
@@ -78,6 +88,9 @@ export default function Header({ transparent = false }: { transparent?: boolean 
           </Link>
           <Link href="/mapa" className="text-sm font-medium text-gray-700 py-2" onClick={() => setMobileOpen(false)}>
             Ver en mapa
+          </Link>
+          <Link href="/dashboard" className="text-sm font-medium text-gray-700 py-2" onClick={() => setMobileOpen(false)}>
+            Mi panel (demo)
           </Link>
           <Link href="/auth" className="text-sm font-medium text-gray-700 py-2" onClick={() => setMobileOpen(false)}>
             Iniciar sesión
