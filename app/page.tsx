@@ -260,7 +260,7 @@ export default function HomePage() {
 
               {/* Trust items */}
               <div className="flex flex-wrap gap-x-6 gap-y-2">
-                {['Profesores verificados', 'Contacto directo', 'Vista en mapa'].map(item => (
+                {['Profesores verificados', 'Contacto directo'].map(item => (
                   <span key={item} className="flex items-center gap-1.5 text-[13px] text-neutral-700">
                     <Check className="w-3.5 h-3.5 text-neutral-900" />
                     {item}
@@ -310,9 +310,6 @@ export default function HomePage() {
               <p className="text-neutral-500 text-[15px] mt-1">Seleccionadas para ti en Lima</p>
             </div>
             <div className="hidden sm:flex items-center gap-3">
-              <Link href="/mapa" className="btn-outline btn-sm">
-                Ver en mapa
-              </Link>
               <Link href="/clases" className="flex items-center gap-1 text-[15px] text-neutral-900 font-semibold hover:underline">
                 Ver todas <ArrowRight className="w-4 h-4" />
               </Link>
@@ -412,23 +409,6 @@ export default function HomePage() {
                 </div>
               );
             })}
-          </div>
-
-          {/* Desktop dashed connectors */}
-          <div className="hidden sm:flex justify-center items-center gap-0 -mt-[88px] mb-[88px] pointer-events-none">
-            <div className="flex-1" />
-            <div className="flex items-center justify-center w-16">
-              <div className="flex items-center gap-1 text-neutral-300">
-                <span className="text-2xl font-light tracking-widest">- - -&gt;</span>
-              </div>
-            </div>
-            <div className="flex-1" />
-            <div className="flex items-center justify-center w-16">
-              <div className="flex items-center gap-1 text-neutral-300">
-                <span className="text-2xl font-light tracking-widest">- - -&gt;</span>
-              </div>
-            </div>
-            <div className="flex-1" />
           </div>
 
           {/* CTA */}

@@ -1,16 +1,50 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MapPin, Clock, Users, Calendar, MessageCircle, Bookmark, ChevronLeft, Star, Globe, Camera, Video } from 'lucide-react';
 import Header from '@/components/Header';
 import ContactModal from '@/components/ContactModal';
 import { getTypeLabel, formatPrice, formatTimeSlots } from '@/lib/mockData';
 import type { DanceClass } from '@/lib/types';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ClaseDetailClient({ cls }: { cls: DanceClass }) {
   const [showContact, setShowContact] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      setIsLoggedIn(true);
+      const { data } = await supabase
+        .from('saved_classes')
+        .select('class_id')
+        .eq('user_id', session.user.id)
+        .eq('class_id', cls.id)
+        .maybeSingle();
+      if (data) setSaved(true);
+    });
+  }, [cls.id]);
+
+  const toggleSave = async () => {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { window.location.href = '/login'; return; }
+    setSaving(true);
+    if (saved) {
+      await supabase.from('saved_classes').delete()
+        .eq('user_id', session.user.id).eq('class_id', cls.id);
+      setSaved(false);
+    } else {
+      await supabase.from('saved_classes').insert({ user_id: session.user.id, class_id: cls.id });
+      setSaved(true);
+    }
+    setSaving(false);
+  };
 
   const images = [cls.coverImage, ...(cls.gallery || [])].filter(Boolean);
   const spotsLeft = cls.availableSpots;
@@ -246,8 +280,9 @@ export default function ClaseDetailClient({ cls }: { cls: DanceClass }) {
                 </button>
 
                 <button
-                  onClick={() => setSaved(!saved)}
-                  className={`w-full flex items-center justify-center gap-2 text-[15px] font-semibold py-3 rounded-btn border-2 transition-all ${
+                  onClick={toggleSave}
+                  disabled={saving}
+                  className={`w-full flex items-center justify-center gap-2 text-[15px] font-semibold py-3 rounded-btn border-2 transition-all disabled:opacity-60 ${
                     saved
                       ? 'bg-neutral-900 text-white border-neutral-900'
                       : 'border-neutral-300 text-neutral-700 hover:border-neutral-900 hover:bg-neutral-50'
@@ -274,7 +309,7 @@ export default function ClaseDetailClient({ cls }: { cls: DanceClass }) {
       </div>
 
       {showContact && (
-        <ContactModal cls={cls} onClose={() => setShowContact(false)} isLoggedIn={false} />
+        <ContactModal cls={cls} onClose={() => setShowContact(false)} isLoggedIn={isLoggedIn} />
       )}
     </div>
   );

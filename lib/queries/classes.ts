@@ -146,6 +146,36 @@ export async function fetchClassById(id: string): Promise<DanceClass | null> {
   return mapDbClassToType(data);
 }
 
+export async function fetchSavedClasses(userId: string): Promise<DanceClass[]> {
+  const supabase = await createClient();
+
+  const { data: saved, error: savedErr } = await supabase
+    .from('saved_classes')
+    .select('class_id')
+    .eq('user_id', userId)
+    .order('saved_at', { ascending: false });
+
+  if (savedErr || !saved?.length) return [];
+
+  const ids = saved.map(r => r.class_id);
+
+  const { data, error } = await supabase
+    .from('classes')
+    .select(`*, ${TEACHER_SELECT}`)
+    .in('id', ids)
+    .eq('status', 'published');
+
+  if (error) {
+    console.error('fetchSavedClasses error:', error.message);
+    return [];
+  }
+
+  const order = new Map(ids.map((id, i) => [id, i]));
+  return (data ?? [])
+    .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+    .map(mapDbClassToType);
+}
+
 export async function fetchTeacherClasses(teacherId: string): Promise<DanceClass[]> {
   const supabase = await createClient();
   const { data, error } = await supabase

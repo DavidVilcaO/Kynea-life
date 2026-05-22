@@ -27,7 +27,6 @@ const DEMO_USERS: Record<Role, { name: string; type: string; photo: string }> = 
 
 const NAV_LINKS = [
   { label: 'Explorar clases', href: '/clases' },
-  { label: 'Ver en mapa', href: '/mapa' },
 ];
 
 export default function Header({ transparent = false }: { transparent?: boolean }) {

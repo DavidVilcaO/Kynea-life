@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
 import {
   LayoutDashboard, BookOpen, PlusCircle, Upload, User,
   MessageCircle, Settings, LogOut, Users,
@@ -19,45 +18,44 @@ interface Profile {
 }
 
 const BADGE = {
-  alumno:   { label: 'Alumno',    bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-100' },
-  profesor: { label: 'Profesor',  bg: 'bg-neutral-100', text: 'text-neutral-700', border: 'border-neutral-200' },
-  academia: { label: 'Academia',  bg: 'bg-pink-50',    text: 'text-pink-600',    border: 'border-pink-100' },
+  alumno:   { label: 'Alumno',   bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-100' },
+  profesor: { label: 'Profesor', bg: 'bg-neutral-100', text: 'text-neutral-700', border: 'border-neutral-200' },
+  academia: { label: 'Academia', bg: 'bg-pink-50',     text: 'text-pink-600',    border: 'border-pink-100' },
 };
 
 const NAV_BY_ROLE = {
   alumno: [
-    { href: '/dashboard/alumno', label: 'Mis clases',     icon: BookOpen },
-    { href: '/dashboard/perfil', label: 'Perfil',          icon: User },
-    { href: '/dashboard/configuracion', label: 'Configuración', icon: Settings },
+    { href: '/dashboard/alumno',       label: 'Mis clases',     icon: BookOpen },
+    { href: '/dashboard/perfil',       label: 'Perfil',         icon: User },
+    { href: '/dashboard/configuracion',label: 'Configuración',  icon: Settings },
   ],
   profesor: [
-    { href: '/dashboard',             label: 'Inicio',        icon: LayoutDashboard },
-    { href: '/dashboard/mis-clases',  label: 'Mis clases',    icon: BookOpen },
-    { href: '/dashboard/crear-clase', label: 'Crear clase',   icon: PlusCircle },
-    { href: '/dashboard/importar-csv',label: 'Importar CSV',  icon: Upload },
-    { href: '/dashboard/perfil',      label: 'Perfil',        icon: User },
-    { href: '/dashboard/contactos',   label: 'Contactos',     icon: MessageCircle },
-    { href: '/dashboard/configuracion',label: 'Configuración',icon: Settings },
+    { href: '/dashboard',              label: 'Inicio',         icon: LayoutDashboard },
+    { href: '/dashboard/mis-clases',   label: 'Mis clases',     icon: BookOpen },
+    { href: '/dashboard/crear-clase',  label: 'Crear clase',    icon: PlusCircle },
+    { href: '/dashboard/importar-csv', label: 'Importar CSV',   icon: Upload },
+    { href: '/dashboard/perfil',       label: 'Perfil',         icon: User },
+    { href: '/dashboard/contactos',    label: 'Contactos',      icon: MessageCircle },
+    { href: '/dashboard/configuracion',label: 'Configuración',  icon: Settings },
   ],
   academia: [
-    { href: '/dashboard',             label: 'Inicio',        icon: LayoutDashboard },
-    { href: '/dashboard/mis-clases',  label: 'Mis clases',    icon: BookOpen },
-    { href: '/dashboard/profesores',  label: 'Profesores',    icon: Users },
-    { href: '/dashboard/crear-clase', label: 'Crear clase',   icon: PlusCircle },
-    { href: '/dashboard/importar-csv',label: 'Importar CSV',  icon: Upload },
-    { href: '/dashboard/perfil',      label: 'Perfil',        icon: User },
-    { href: '/dashboard/contactos',   label: 'Contactos',     icon: MessageCircle },
-    { href: '/dashboard/configuracion',label: 'Configuración',icon: Settings },
+    { href: '/dashboard',              label: 'Inicio',         icon: LayoutDashboard },
+    { href: '/dashboard/mis-clases',   label: 'Mis clases',     icon: BookOpen },
+    { href: '/dashboard/profesores',   label: 'Profesores',     icon: Users },
+    { href: '/dashboard/crear-clase',  label: 'Crear clase',    icon: PlusCircle },
+    { href: '/dashboard/importar-csv', label: 'Importar CSV',   icon: Upload },
+    { href: '/dashboard/perfil',       label: 'Perfil',         icon: User },
+    { href: '/dashboard/contactos',    label: 'Contactos',      icon: MessageCircle },
+    { href: '/dashboard/configuracion',label: 'Configuración',  icon: Settings },
   ],
 };
 
 export default function DashboardSidebar({ profile }: { profile: Profile }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [viewRole, setViewRole] = useState<Role>(profile.role);
 
-  const badge = BADGE[viewRole];
-  const NAV   = NAV_BY_ROLE[viewRole];
+  const badge = BADGE[profile.role];
+  const NAV   = NAV_BY_ROLE[profile.role];
 
   async function logout() {
     const supabase = createClient();
@@ -84,7 +82,7 @@ export default function DashboardSidebar({ profile }: { profile: Profile }) {
             >
               <Icon className="w-4 h-4" />
               {item.label}
-              {item.label === 'Crear clase' && (viewRole === 'profesor' || viewRole === 'academia') && (
+              {item.label === 'Crear clase' && (profile.role === 'profesor' || profile.role === 'academia') && (
                 <span className={`ml-auto text-xs px-1.5 py-0.5 rounded-full font-bold ${active ? 'bg-white/20 text-white' : 'bg-neutral-900 text-white'}`}>+</span>
               )}
             </Link>
@@ -115,29 +113,10 @@ export default function DashboardSidebar({ profile }: { profile: Profile }) {
             )}
             <div className="min-w-0">
               <p className="text-sm font-bold text-neutral-900 truncate">{profile.name}</p>
-              <p className="text-xs text-neutral-500">{profile.role}</p>
               <span className={`text-[10px] font-bold ${badge.bg} ${badge.text} border ${badge.border} px-2 py-0.5 rounded-full`}>
                 {badge.label}
               </span>
             </div>
-          </div>
-        </div>
-
-        {/* Demo role switcher */}
-        <div className="px-3 py-3 border-b border-neutral-100">
-          <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2 px-1">Ver como</p>
-          <div className="flex gap-1">
-            {(['alumno', 'profesor', 'academia'] as const).map(r => (
-              <button
-                key={r}
-                onClick={() => setViewRole(r)}
-                className={`flex-1 text-[11px] font-bold py-1.5 rounded-lg capitalize transition-all ${
-                  viewRole === r ? 'bg-neutral-900 text-white' : 'text-neutral-500 hover:bg-neutral-100'
-                }`}
-              >
-                {r === 'alumno' ? 'Alumno' : r === 'profesor' ? 'Profe' : 'Acad.'}
-              </button>
-            ))}
           </div>
         </div>
 

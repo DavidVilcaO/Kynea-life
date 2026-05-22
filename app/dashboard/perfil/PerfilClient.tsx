@@ -29,7 +29,19 @@ export default function PerfilClient({ profile }: { profile: Profile }) {
   const [city, setCity] = useState(profile.city ?? '');
   const [district, setDistrict] = useState(profile.district ?? '');
   const [years, setYears] = useState(String(profile.years_experience ?? ''));
-  const [whatsapp, setWhatsapp] = useState(profile.whatsapp ?? '');
+  const parseWa = (wa: string) => {
+    const CODES = ['+51', '+1', '+34', '+57', '+56', '+54', '+52', '+58', '+593'];
+    if (!wa) return { code: '+51', number: '' };
+    const m = wa.match(/^(\+\d{1,3})(.*)/);
+    if (m) {
+      const code = CODES.find(c => c === m[1]) ?? '+51';
+      return { code, number: m[2].trim().replace(/\D/g, '') };
+    }
+    return { code: '+51', number: wa.replace(/\D/g, '') };
+  };
+  const parsed = parseWa(profile.whatsapp ?? '');
+  const [waCode, setWaCode] = useState(parsed.code);
+  const [waNumber, setWaNumber] = useState(parsed.number);
   const [instagram, setInstagram] = useState(profile.instagram ?? '');
   const [tiktok, setTiktok] = useState(profile.tiktok ?? '');
   const [youtube, setYoutube] = useState(profile.youtube ?? '');
@@ -51,7 +63,7 @@ export default function PerfilClient({ profile }: { profile: Profile }) {
           city,
           district,
           years_experience: years ? parseInt(years) : undefined,
-          whatsapp,
+          whatsapp: waNumber ? `${waCode}${waNumber}` : '',
           instagram,
           tiktok,
           youtube,
@@ -146,8 +158,38 @@ export default function PerfilClient({ profile }: { profile: Profile }) {
         {/* Contact & social */}
         <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-6 space-y-4">
           <h2 className="font-bold text-neutral-900">Contacto y redes</h2>
+
+          {/* WhatsApp — split country code + number */}
+          <div>
+            <label className="block text-xs font-semibold text-neutral-700 mb-1.5">WhatsApp</label>
+            <div className="flex gap-2">
+              <select
+                value={waCode}
+                onChange={e => setWaCode(e.target.value)}
+                className="border border-neutral-200 rounded-xl px-3 py-3 text-sm text-neutral-800 outline-none focus:border-neutral-900 bg-white shrink-0"
+              >
+                <option value="+51">🇵🇪 +51</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+34">🇪🇸 +34</option>
+                <option value="+57">🇨🇴 +57</option>
+                <option value="+56">🇨🇱 +56</option>
+                <option value="+54">🇦🇷 +54</option>
+                <option value="+52">🇲🇽 +52</option>
+                <option value="+58">🇻🇪 +58</option>
+                <option value="+593">🇪🇨 +593</option>
+              </select>
+              <input
+                type="tel"
+                value={waNumber}
+                onChange={e => setWaNumber(e.target.value.replace(/\D/g, ''))}
+                placeholder="999 999 999"
+                className="flex-1 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-800 outline-none focus:border-neutral-900"
+              />
+            </div>
+            <p className="text-xs text-neutral-400 mt-1">Solo números, sin ceros iniciales ni guiones. Ej: 999999999</p>
+          </div>
+
           {[
-            { label: 'WhatsApp', value: whatsapp, set: setWhatsapp },
             { label: 'Instagram', value: instagram, set: setInstagram },
             { label: 'TikTok', value: tiktok, set: setTiktok },
             { label: 'YouTube', value: youtube, set: setYoutube },
