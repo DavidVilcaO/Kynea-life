@@ -14,34 +14,34 @@ export default function ContactosPage() {
   return (
     <div className="p-6 lg:p-8 max-w-3xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-black text-gray-900">Contactos</h1>
-        <p className="text-gray-500 text-sm mt-1">{CONTACTS.filter(c => !c.read).length} contactos nuevos sin leer</p>
+        <h1 className="text-2xl font-black text-neutral-900">Contactos</h1>
+        <p className="text-neutral-500 text-sm mt-1">{CONTACTS.filter(c => !c.read).length} contactos nuevos sin leer</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="divide-y divide-gray-50">
+      <div className="bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden">
+        <div className="divide-y divide-neutral-50">
           {CONTACTS.map((contact, i) => (
-            <div key={i} className={`flex items-start gap-4 p-5 hover:bg-gray-50 transition-colors ${!contact.read ? 'bg-purple-50/30' : ''}`}>
+            <div key={i} className={`flex items-start gap-4 p-5 hover:bg-neutral-50 transition-colors ${!contact.read ? 'bg-neutral-50/30' : ''}`}>
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                !contact.read ? 'bg-purple-100' : 'bg-gray-100'
+                !contact.read ? 'bg-neutral-900' : 'bg-neutral-100'
               }`}>
-                <span className="font-bold text-sm text-purple-700">{contact.name[0]}</span>
+                <span className={`font-bold text-sm ${!contact.read ? 'text-white' : 'text-neutral-700'}`}>{contact.name[0]}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-semibold text-gray-900 text-sm">{contact.name}</p>
+                  <p className="font-semibold text-neutral-900 text-sm">{contact.name}</p>
                   {!contact.read && (
-                    <span className="w-2 h-2 bg-purple-600 rounded-full" />
+                    <span className="w-2 h-2 bg-neutral-900 rounded-full" />
                   )}
                 </div>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Interesado en: <span className="text-purple-600 font-medium">{contact.class.title}</span>
+                <p className="text-xs text-neutral-500 mt-0.5">
+                  Interesado en: <span className="text-neutral-900 font-medium">{contact.class.title}</span>
                 </p>
                 <div className="flex items-center gap-3 mt-2">
-                  <span className="text-xs text-gray-400 flex items-center gap-1">
+                  <span className="text-xs text-neutral-400 flex items-center gap-1">
                     <Clock className="w-3 h-3" /> {contact.time}
                   </span>
-                  <span className="text-xs text-gray-400 flex items-center gap-1">
+                  <span className="text-xs text-neutral-400 flex items-center gap-1">
                     <Phone className="w-3 h-3" /> {contact.phone}
                   </span>
                 </div>
