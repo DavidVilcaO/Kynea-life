@@ -2,22 +2,23 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Search, MapPin, ArrowRight, Star, Check, CalendarCheck, MessageCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Search, MapPin, ArrowRight, Star, Check, CalendarCheck, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from '@/components/Header';
 import ClassCard from '@/components/ClassCard';
 import { mockClasses, mockTeachers } from '@/lib/mockData';
 
+// ── Category definitions with per-style color tokens ───────────────────────
 const CATEGORIES = [
-  { name: 'Salsa',         emoji: '🌶️' },
-  { name: 'Bachata',       emoji: '🌹' },
-  { name: 'Heels',         emoji: '👠' },
-  { name: 'Hip Hop',       emoji: '🎤' },
-  { name: 'Jazz Funk',     emoji: '🎷' },
-  { name: 'K-pop',         emoji: '⭐' },
-  { name: 'Contemporáneo', emoji: '🎭' },
-  { name: 'Ballet',        emoji: '🩰' },
-  { name: 'Breakdance',    emoji: '🔥' },
+  { name: 'Salsa',         emoji: '🌶️', bg: 'bg-red-50',    border: 'border-red-100'    },
+  { name: 'Bachata',       emoji: '🌹', bg: 'bg-rose-50',   border: 'border-rose-100'   },
+  { name: 'Heels',         emoji: '👠', bg: 'bg-pink-50',   border: 'border-pink-100'   },
+  { name: 'Hip Hop',       emoji: '🎤', bg: 'bg-neutral-900 text-white', border: 'border-neutral-900' },
+  { name: 'Jazz Funk',     emoji: '🎷', bg: 'bg-yellow-50', border: 'border-yellow-200' },
+  { name: 'K-pop',         emoji: '⭐', bg: 'bg-violet-50', border: 'border-violet-100' },
+  { name: 'Contemporáneo', emoji: '🎭', bg: 'bg-sky-50',    border: 'border-sky-100'    },
+  { name: 'Ballet',        emoji: '🩰', bg: 'bg-blue-50',   border: 'border-blue-100'   },
+  { name: 'Breakdance',    emoji: '🔥', bg: 'bg-orange-50', border: 'border-orange-100' },
 ];
 
 const CLASS_TABS = ['Todas', 'Salsa', 'Heels', 'Hip Hop'];
@@ -43,11 +44,153 @@ const HOW_IT_WORKS = [
   },
 ];
 
+// ── Extra teachers/academias to fill out sections ─────────────────────────
+const EXTRA_TEACHERS = [
+  {
+    id: 'et1',
+    name: 'Carlos Mendoza',
+    type: 'profesor',
+    photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
+    city: 'Lima',
+    district: 'San Isidro',
+    bio: 'Especialista en salsa on2 y bachata moderna.',
+    experience: 8,
+    styles: ['Salsa', 'Bachata'],
+    rating: 4.8,
+    totalClasses: 145,
+    whatsapp: '',
+    email: '',
+  },
+  {
+    id: 'et2',
+    name: 'Valentina Cruz',
+    type: 'profesor',
+    photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+    city: 'Lima',
+    district: 'Miraflores',
+    bio: 'Instructora de heels y jazz funk con 6 años formando bailarinas.',
+    experience: 6,
+    styles: ['Heels', 'Jazz Funk'],
+    rating: 4.9,
+    totalClasses: 98,
+    whatsapp: '',
+    email: '',
+  },
+] as any[];
+
+const EXTRA_ACADEMIAS = [
+  {
+    id: 'ea1',
+    name: 'Centro de Danza Vivo',
+    type: 'academia',
+    photo: 'https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?w=400&q=80',
+    city: 'Lima',
+    district: 'San Borja',
+    bio: 'Academia con 15 años formando bailarines profesionales.',
+    experience: 15,
+    styles: ['Ballet', 'Contemporáneo', 'Jazz'],
+    rating: 4.7,
+    totalClasses: 320,
+    whatsapp: '',
+    email: '',
+  },
+  {
+    id: 'ea2',
+    name: 'Urban Groove Academy',
+    type: 'academia',
+    photo: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',
+    city: 'Lima',
+    district: 'Lince',
+    bio: 'La academia de hip hop más reconocida del Perú.',
+    experience: 10,
+    styles: ['Hip Hop', 'Breakdance', 'K-pop'],
+    rating: 4.8,
+    totalClasses: 215,
+    whatsapp: '',
+    email: '',
+  },
+] as any[];
+
+// ── Animated counter hook ─────────────────────────────────────────────────
+function useCountUp(target: number, duration = 1500, start = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let startTime: number | null = null;
+    const numericTarget = parseInt(String(target).replace(/\D/g, ''));
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * numericTarget));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [start, target, duration]);
+  return count;
+}
+
+// ── Stats data ────────────────────────────────────────────────────────────
+const STATS = [
+  { target: 240, suffix: '+', label: 'Clases disponibles',      dark: false },
+  { target: 80,  suffix: '+', label: 'Profesores verificados',  dark: true  },
+  { target: 19,  suffix: '',  label: 'Estilos de baile',        dark: false },
+  { target: 5,   suffix: '',  label: 'Ciudades en Perú',        dark: false },
+];
+
+// ── Individual stat card with its own counter ─────────────────────────────
+function StatCard({ stat, visible }: { stat: typeof STATS[number]; visible: boolean }) {
+  const count = useCountUp(stat.target, 1500, visible);
+  return (
+    <div
+      className={`rounded-xl p-6 shadow-sm border ${
+        stat.dark
+          ? 'bg-neutral-900 border-neutral-900 text-white'
+          : 'bg-white border-white/70'
+      }`}
+    >
+      <p className={`text-[38px] font-black leading-none tracking-tighter mb-1 ${stat.dark ? 'text-white' : 'text-neutral-900'}`}>
+        {count}{stat.suffix}
+      </p>
+      <p className={`text-[13px] ${stat.dark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+        {stat.label}
+      </p>
+    </div>
+  );
+}
+
+// ── Page component ────────────────────────────────────────────────────────
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [city, setCity] = useState('Lima');
   const [activeTab, setActiveTab] = useState('Todas');
+
+  // Stats IntersectionObserver
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [statsVisible, setStatsVisible] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setStatsVisible(true); },
+      { threshold: 0.3 }
+    );
+    if (statsRef.current) observer.observe(statsRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Carousel auto-scroll
+  const carouselRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    const interval = setInterval(() => {
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        el.scrollBy({ left: 320, behavior: 'smooth' });
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,9 +200,9 @@ export default function HomePage() {
     router.push(`/clases?${params.toString()}`);
   };
 
-  const featured = mockClasses.filter(c => c.status === 'published').slice(0, 4);
-  const profesores = mockTeachers.filter(t => t.type === 'profesor');
-  const academias = mockTeachers.filter(t => t.type === 'academia');
+  const featured = mockClasses.filter(c => c.status === 'published');
+  const profesores = [...mockTeachers.filter(t => t.type === 'profesor'), ...EXTRA_TEACHERS];
+  const academias = [...mockTeachers.filter(t => t.type === 'academia'), ...EXTRA_ACADEMIAS];
 
   return (
     <div className="min-h-screen bg-white">
@@ -77,13 +220,13 @@ export default function HomePage() {
               </div>
 
               <h1 className="text-[48px] lg:text-[66px] font-black tracking-tighter text-neutral-900 leading-none mb-6">
-                Encuentra tu<br />
-                próxima clase<br />
-                de danza.
+                Donde la pasión<br />
+                por la danza<br />
+                cobra vida.
               </h1>
 
               <p className="text-[17px] text-neutral-700 mb-10 leading-relaxed max-w-md">
-                Conecta con los mejores profesores y academias del Perú. Presencial y online.
+                Encuentra clases de baile, audiciones, shows, eventos culturales y tiendas especializadas.
               </p>
 
               {/* Search bar */}
@@ -126,60 +269,38 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right — Stats cards */}
-            <div className="hidden lg:grid grid-cols-2 gap-4">
-              {[
-                { value: '240+', label: 'Clases disponibles', dark: false },
-                { value: '80+',  label: 'Profesores verificados', dark: true },
-                { value: '19',   label: 'Estilos de baile', dark: false },
-                { value: '5',    label: 'Ciudades en Perú', dark: false },
-              ].map(stat => (
-                <div
-                  key={stat.label}
-                  className={`rounded-xl p-6 shadow-sm border ${
-                    stat.dark
-                      ? 'bg-neutral-900 border-neutral-900 text-white'
-                      : 'bg-white border-white/70'
-                  }`}
-                >
-                  <p className={`text-[38px] font-black leading-none tracking-tighter mb-1 ${stat.dark ? 'text-white' : 'text-neutral-900'}`}>
-                    {stat.value}
-                  </p>
-                  <p className={`text-[13px] ${stat.dark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                    {stat.label}
-                  </p>
-                </div>
+            {/* Right — Animated Stats cards */}
+            <div ref={statsRef} className="hidden lg:grid grid-cols-2 gap-4">
+              {STATS.map(stat => (
+                <StatCard key={stat.label} stat={stat} visible={statsVisible} />
               ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── CATEGORÍAS — compact, seamless with hero ── */}
-      <section className="bg-white border-b border-neutral-100 py-8">
+      {/* ── CATEGORÍAS — colorful cards, horizontal scroll ── */}
+      <section className="bg-white py-8">
         <div className="max-w-[1200px] mx-auto px-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[20px] font-extrabold text-neutral-900 tracking-snug">Explora por estilo</h2>
-            <Link href="/clases" className="hidden sm:flex items-center gap-1 text-[13px] text-neutral-900 font-semibold hover:underline">
-              Ver todos <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <div
+            className="flex gap-3 overflow-x-auto pb-2"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
+          >
             {CATEGORIES.map(cat => (
               <Link
                 key={cat.name}
                 href={`/clases?style=${encodeURIComponent(cat.name)}`}
-                className="tag shrink-0"
+                className={`shrink-0 min-w-[120px] rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-all border ${cat.bg} ${cat.border}`}
               >
-                <span className="mr-1">{cat.emoji}</span>
-                {cat.name}
+                <span className="text-2xl">{cat.emoji}</span>
+                <span className="text-sm font-bold text-center leading-tight">{cat.name}</span>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CLASES ESTA SEMANA — 4 per row ── */}
+      {/* ── CLASES ESTA SEMANA — horizontal auto-scroll carousel ── */}
       <section className="bg-neutral-50 py-16">
         <div className="max-w-[1200px] mx-auto px-6">
           {/* Header row */}
@@ -215,12 +336,40 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* 4-column grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featured.map(cls => <ClassCard key={cls.id} cls={cls} />)}
+          {/* Carousel */}
+          <div className="relative">
+            {/* Prev arrow */}
+            <button
+              onClick={() => carouselRef.current?.scrollBy({ left: -320, behavior: 'smooth' })}
+              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-neutral-200 rounded-full shadow-sm flex items-center justify-center hover:bg-neutral-50 transition-colors hidden sm:flex"
+              aria-label="Anterior"
+            >
+              <ChevronLeft className="w-5 h-5 text-neutral-600" />
+            </button>
+
+            <div
+              ref={carouselRef}
+              className="flex gap-4 overflow-x-auto pb-4"
+              style={{ scrollbarWidth: 'none', scrollSnapType: 'x mandatory', msOverflowStyle: 'none' } as React.CSSProperties}
+            >
+              {featured.map(cls => (
+                <div key={cls.id} className="shrink-0 w-72 sm:w-80" style={{ scrollSnapAlign: 'start' }}>
+                  <ClassCard cls={cls} compact />
+                </div>
+              ))}
+            </div>
+
+            {/* Next arrow */}
+            <button
+              onClick={() => carouselRef.current?.scrollBy({ left: 320, behavior: 'smooth' })}
+              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-neutral-200 rounded-full shadow-sm flex items-center justify-center hover:bg-neutral-50 transition-colors hidden sm:flex"
+              aria-label="Siguiente"
+            >
+              <ChevronRight className="w-5 h-5 text-neutral-600" />
+            </button>
           </div>
 
-          <div className="mt-8 text-center sm:hidden">
+          <div className="mt-6 text-center sm:hidden">
             <Link href="/clases" className="btn-outline">
               Ver todas las clases
             </Link>
@@ -228,7 +377,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── CÓMO FUNCIONA — redesigned horizontal layout ── */}
+      {/* ── CÓMO FUNCIONA ── */}
       <section className="bg-white py-20">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="text-center mb-14">
@@ -257,7 +406,6 @@ export default function HomePage() {
                     <p className="text-[15px] text-neutral-500 leading-relaxed">{item.desc}</p>
                   </div>
 
-                  {/* Dashed arrow connector — visible between steps on desktop */}
                   {idx < HOW_IT_WORKS.length - 1 && (
                     <div className="hidden sm:flex absolute" style={{ display: 'none' }} />
                   )}
@@ -266,7 +414,7 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Desktop dashed connectors rendered separately so they sit between flex items */}
+          {/* Desktop dashed connectors */}
           <div className="hidden sm:flex justify-center items-center gap-0 -mt-[88px] mb-[88px] pointer-events-none">
             <div className="flex-1" />
             <div className="flex items-center justify-center w-16">
@@ -292,7 +440,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── PROFESORES DESTACADOS — bg white, bigger photos ── */}
+      {/* ── PROFESORES DESTACADOS — portrait cards, 4-column ── */}
       <section className="bg-white py-16 border-t border-neutral-100">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="flex items-end justify-between mb-8">
@@ -305,47 +453,40 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {profesores.map(t => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+            {profesores.map((t: any) => (
               <Link
                 key={t.id}
                 href={`/profesores/${t.id}`}
-                className="card-hover overflow-hidden p-0 block group"
+                className="card-hover overflow-hidden p-0 block group rounded-xl border border-neutral-100"
               >
-                {/* Large photo */}
-                <div className="relative w-full h-52 overflow-hidden rounded-t-xl">
+                {/* Portrait photo */}
+                <div className="w-full h-56 overflow-hidden rounded-t-xl">
                   <img
                     src={t.photo}
                     alt={t.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
                 {/* Info */}
-                <div className="p-5">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-bold text-neutral-900 text-[18px] leading-tight mb-0.5">{t.name}</h3>
-                      <p className="text-[13px] text-neutral-500">{t.district} · {t.city}</p>
-                    </div>
-                    {t.rating && (
-                      <div className="flex items-center gap-1 shrink-0 ml-3">
-                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                        <span className="text-[14px] font-bold text-neutral-800">{t.rating}</span>
-                      </div>
-                    )}
-                  </div>
-
+                <div className="p-4">
+                  <h3 className="font-bold text-neutral-900 text-[15px] leading-tight mb-1">{t.name}</h3>
                   {/* Style chips */}
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {t.styles.map(s => (
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {t.styles.slice(0, 2).map((s: string) => (
                       <span key={s} className="badge-pink text-[11px]">{s}</span>
                     ))}
                   </div>
-
                   <div className="flex items-center justify-between">
-                    <p className="text-[13px] text-neutral-500">{t.experience} años de experiencia</p>
-                    <span className="text-[13px] font-semibold text-neutral-900 hover:underline">Ver perfil →</span>
+                    {t.rating && (
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                        <span className="text-[13px] font-bold text-neutral-800">{t.rating}</span>
+                      </div>
+                    )}
+                    <p className="text-[12px] text-neutral-400">{t.totalClasses} clases</p>
                   </div>
+                  <span className="mt-2 block text-[12px] font-semibold text-neutral-900 hover:underline">Ver perfil →</span>
                 </div>
               </Link>
             ))}
@@ -353,12 +494,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── ACADEMIAS ASOCIADAS — bg neutral-50, horizontal cards ── */}
+      {/* ── ACADEMIAS — bg neutral-50, horizontal cards ── */}
       <section className="bg-neutral-50 py-16">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="flex items-end justify-between mb-8">
             <div>
-              <h2 className="text-[30px] font-extrabold text-neutral-900 tracking-snug">Academias asociadas</h2>
+              <h2 className="text-[30px] font-extrabold text-neutral-900 tracking-snug">Academias</h2>
               <p className="text-neutral-500 text-[15px] mt-1">Espacios de danza en todo el Perú</p>
             </div>
             <Link href="/profesores?type=academia" className="hidden sm:flex items-center gap-1 text-[15px] text-neutral-900 font-semibold hover:underline">
@@ -366,8 +507,8 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {academias.map(t => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {academias.map((t: any) => (
               <Link
                 key={t.id}
                 href={`/profesores/${t.id}`}
@@ -401,7 +542,7 @@ export default function HomePage() {
 
                   {/* Style chips */}
                   <div className="flex flex-wrap gap-1 mb-2">
-                    {t.styles.slice(0, 3).map(s => (
+                    {t.styles.slice(0, 3).map((s: string) => (
                       <span key={s} className="badge-pink text-[11px]">{s}</span>
                     ))}
                     {t.styles.length > 3 && (
