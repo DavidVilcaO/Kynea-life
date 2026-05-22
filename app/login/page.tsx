@@ -2,26 +2,65 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Globe } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Globe, Loader2 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
+// Demo accounts for easy testing — these must exist in your Supabase project
 const DEMO_ACCOUNTS = [
-  { email: 'alumno@kynea.pe', password: 'demo1234', label: 'Alumno demo', redirect: '/clases' },
-  { email: 'profesor@kynea.pe', password: 'demo1234', label: 'Profesor demo', redirect: '/dashboard' },
+  { email: 'alumno@kynea.pe',   label: 'Alumno demo',   redirect: '/clases' },
+  { email: 'profesor@kynea.pe', label: 'Profesor demo',  redirect: '/dashboard' },
+  { email: 'academia@kynea.pe', label: 'Academia demo',  redirect: '/dashboard' },
 ];
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const match = DEMO_ACCOUNTS.find(a => a.email === email && a.password === password);
-    if (match) {
-      window.location.href = match.redirect;
-    } else {
-      setError('Correo o contraseña incorrectos. Usa las cuentas demo de abajo.');
+    setError('');
+    setLoading(true);
+
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (authError) {
+      setError('Correo o contraseña incorrectos.');
+      setLoading(false);
+      return;
     }
+
+    // Fetch role to redirect correctly
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user!.id)
+      .single();
+
+    router.refresh(); // invalidate server caches
+    router.push(profile?.role === 'alumno' ? '/clases' : '/dashboard');
+  }
+
+  async function loginAsDemo(demoEmail: string, demoRedirect: string) {
+    setLoading(true);
+    setError('');
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: demoEmail,
+      password: 'demo1234',
+    });
+    if (authError) {
+      setError('Las cuentas demo no están configuradas aún en Supabase.');
+      setLoading(false);
+      return;
+    }
+    router.refresh();
+    router.push(demoRedirect);
   }
 
   return (
@@ -40,13 +79,14 @@ export default function LoginPage() {
 
             {/* Demo accounts */}
             <div className="bg-yellow-bg border border-yellow-dark/30 rounded-xl p-4 mb-6">
-              <p className="text-[11px] font-bold text-neutral-800 uppercase tracking-wider mb-2">Acceso demo — sin registro</p>
-              <div className="flex gap-2">
+              <p className="text-[11px] font-bold text-neutral-800 uppercase tracking-wider mb-2">Acceso demo rápido</p>
+              <div className="flex gap-2 flex-wrap">
                 {DEMO_ACCOUNTS.map(a => (
                   <button
                     key={a.email}
-                    onClick={() => { window.location.href = a.redirect; }}
-                    className="flex-1 text-[13px] font-semibold bg-white border border-neutral-200 hover:border-neutral-900 text-neutral-800 py-2 rounded-md transition-all"
+                    onClick={() => loginAsDemo(a.email, a.redirect)}
+                    disabled={loading}
+                    className="flex-1 text-[13px] font-semibold bg-white border border-neutral-200 hover:border-neutral-900 text-neutral-800 py-2 rounded-md transition-all disabled:opacity-50"
                   >
                     {a.label}
                   </button>
@@ -54,7 +94,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button className="w-full btn-outline mb-4">
+            <button className="w-full btn-outline mb-4" type="button">
               <Globe className="w-4 h-4" />
               Continuar con Google
             </button>
@@ -85,7 +125,9 @@ export default function LoginPage() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-[13px] font-semibold text-neutral-700">Contraseña</label>
-                  <button type="button" className="text-[13px] text-neutral-900 font-semibold hover:underline">¿Olvidaste tu contraseña?</button>
+                  <button type="button" className="text-[13px] text-neutral-900 font-semibold hover:underline">
+                    ¿Olvidaste tu contraseña?
+                  </button>
                 </div>
                 <input
                   type="password"
@@ -97,8 +139,9 @@ export default function LoginPage() {
                 />
               </div>
 
-              <button type="submit" className="btn-dark w-full mt-1">
-                Iniciar sesión
+              <button type="submit" disabled={loading} className="btn-dark w-full mt-1 flex items-center justify-center gap-2">
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {loading ? 'Ingresando…' : 'Iniciar sesión'}
               </button>
             </form>
 

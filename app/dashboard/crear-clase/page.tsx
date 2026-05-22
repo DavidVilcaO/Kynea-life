@@ -1,12 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronLeft, ChevronRight, Plus, Trash2, Save,
-  Upload, MapPin, Monitor, Layers,
+  Upload, MapPin, Monitor, Layers, Loader2,
 } from 'lucide-react';
 import { DANCE_STYLES, LEVELS } from '@/lib/mockData';
+import { createClass } from '@/lib/actions/classes';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -106,6 +107,8 @@ function NativeSelect({
 export default function CrearClasePage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [isPending, startTransition] = useTransition();
+  const [submitError, setSubmitError] = useState('');
   const [slots, setSlots] = useState<Slot[]>([
     { days: [], startTime: '19:00', endTime: '20:30' },
   ]);
@@ -175,8 +178,42 @@ export default function CrearClasePage() {
   };
 
   const handlePublish = (status: string) => {
-    set('status', status);
-    router.push('/dashboard/mis-clases');
+    setSubmitError('');
+    startTransition(async () => {
+      try {
+        const fd = new FormData();
+        fd.set('status', status);
+        fd.set('type', form.type);
+        fd.set('title', form.title);
+        fd.set('style', form.style);
+        fd.set('level', form.level);
+        fd.set('shortDesc', form.shortDesc);
+        fd.set('fullDesc', form.fullDesc);
+        fd.set('startDate', form.startDate);
+        fd.set('endDate', form.endDate);
+        fd.set('priceType', form.priceType);
+        fd.set('price', form.price);
+        fd.set('currency', form.currency);
+        fd.set('maxSpots', form.maxSpots);
+        fd.set('modality', form.modality);
+        fd.set('city', form.city);
+        fd.set('district', form.district);
+        fd.set('address', form.address);
+        fd.set('reference', form.reference);
+        fd.set('footwear', form.footwear);
+        fd.set('clothing', form.clothing);
+        fd.set('prerequisites', form.prerequisites);
+        fd.set('ageGroup', form.ageGroup);
+        fd.set('timeSlots', JSON.stringify(slots));
+        fd.set('toBring', JSON.stringify(form.toBring));
+        await createClass(fd);
+        // createClass redirects on success; if we reach here it errored silently
+      } catch (err: unknown) {
+        // Next.js redirect throws a special error — re-throw it so navigation works
+        if (err instanceof Error && err.message === 'NEXT_REDIRECT') throw err;
+        setSubmitError(err instanceof Error ? err.message : 'Error al guardar');
+      }
+    });
   };
 
   // ── Step 1: Información básica ─────────────────────────────────────────────
@@ -934,21 +971,30 @@ export default function CrearClasePage() {
             Continuar <ChevronRight className="w-4 h-4" />
           </button>
         ) : (
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => handlePublish('draft')}
-              className="btn-outline flex items-center gap-2"
-            >
-              <Save className="w-4 h-4" /> Guardar borrador
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePublish('published')}
-              className="btn-dark flex items-center gap-2"
-            >
-              Publicar clase <ChevronRight className="w-4 h-4" />
-            </button>
+          <div className="flex flex-col gap-3">
+            {submitError && (
+              <p className="text-[13px] text-red-600 font-medium">{submitError}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => handlePublish('draft')}
+                disabled={isPending}
+                className="btn-outline flex items-center gap-2 disabled:opacity-50"
+              >
+                {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Guardar borrador
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePublish('published')}
+                disabled={isPending}
+                className="btn-dark flex items-center gap-2 disabled:opacity-50"
+              >
+                {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Publicar clase <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
