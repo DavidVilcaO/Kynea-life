@@ -29,13 +29,13 @@ export default function MapaPage() {
       <Header />
 
       {/* Top bar */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 z-30">
-        <div className="flex-1 text-sm text-gray-600">
-          <span className="font-bold text-gray-900">{classesWithCoords.length}</span> clases en Lima
+      <div className="bg-white border-b border-neutral-100 px-4 py-3 flex items-center gap-3 z-30">
+        <div className="flex-1 text-sm text-neutral-600">
+          <span className="font-bold text-neutral-900">{classesWithCoords.length}</span> clases en Lima
         </div>
         <Link
           href="/buscar"
-          className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:border-purple-300 transition-colors"
+          className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl border border-neutral-200 text-neutral-700 hover:border-neutral-900 transition-colors"
         >
           <List className="w-4 h-4" />
           Ver lista
@@ -44,30 +44,30 @@ export default function MapaPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel */}
-        <div className="hidden md:flex flex-col w-96 shrink-0 bg-white border-r border-gray-100 overflow-y-auto">
-          <div className="p-4 border-b border-gray-100">
-            <h2 className="font-bold text-gray-900">Clases disponibles</h2>
-            <p className="text-xs text-gray-500 mt-1">Haz clic en una clase o en un pin del mapa</p>
+        <div className="hidden md:flex flex-col w-96 shrink-0 bg-white border-r border-neutral-100 overflow-y-auto">
+          <div className="p-4 border-b border-neutral-100">
+            <h2 className="font-bold text-neutral-900">Clases disponibles</h2>
+            <p className="text-xs text-neutral-500 mt-1">Haz clic en una clase o en un pin del mapa</p>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-neutral-50">
             {classesWithCoords.map(cls => (
               <button
                 key={cls.id}
                 onClick={() => setSelected(selected?.id === cls.id ? null : cls)}
-                className={`w-full text-left p-4 hover:bg-gray-50 transition-colors flex gap-3 ${
-                  selected?.id === cls.id ? 'bg-purple-50 border-l-2 border-purple-600' : ''
+                className={`w-full text-left p-4 hover:bg-neutral-50 transition-colors flex gap-3 ${
+                  selected?.id === cls.id ? 'bg-neutral-100 border-l-2 border-neutral-900' : ''
                 }`}
               >
                 <img src={cls.coverImage} alt={cls.title} className="w-20 h-16 rounded-xl object-cover shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-purple-600 font-semibold">{cls.style} · {getTypeLabel(cls.type)}</p>
-                  <h3 className="font-bold text-gray-900 text-sm leading-snug truncate">{cls.title}</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">{cls.teacher.name}</p>
+                  <p className="text-xs text-neutral-900 font-semibold">{cls.style} · {getTypeLabel(cls.type)}</p>
+                  <h3 className="font-bold text-neutral-900 text-sm leading-snug truncate">{cls.title}</h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">{cls.teacher.name}</p>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                    <span className="text-xs text-neutral-500 flex items-center gap-1">
                       <MapPin className="w-3 h-3" />{cls.district}
                     </span>
-                    <span className="text-xs font-bold text-purple-700">{formatPrice(cls.priceType, cls.price, cls.currency)}</span>
+                    <span className="text-xs font-bold text-neutral-900">{formatPrice(cls.priceType, cls.price, cls.currency)}</span>
                   </div>
                 </div>
               </button>
@@ -76,7 +76,7 @@ export default function MapaPage() {
         </div>
 
         {/* Map area */}
-        <div className="flex-1 relative bg-slate-100 overflow-hidden">
+        <div className="flex-1 relative bg-neutral-100 overflow-hidden">
           {/* Styled map background */}
           <div className="absolute inset-0"
             style={{
@@ -98,11 +98,11 @@ export default function MapaPage() {
             </svg>
 
             {/* District labels */}
-            <div className="absolute top-[25%] left-[20%] text-xs font-semibold text-slate-500 bg-white/60 px-2 py-1 rounded">Jesús María</div>
-            <div className="absolute top-[40%] left-[35%] text-xs font-semibold text-slate-500 bg-white/60 px-2 py-1 rounded">Miraflores</div>
-            <div className="absolute top-[55%] left-[25%] text-xs font-semibold text-slate-500 bg-white/60 px-2 py-1 rounded">Barranco</div>
-            <div className="absolute top-[35%] left-[60%] text-xs font-semibold text-slate-500 bg-white/60 px-2 py-1 rounded">Surco</div>
-            <div className="absolute top-[25%] left-[50%] text-xs font-semibold text-slate-500 bg-white/60 px-2 py-1 rounded">San Borja</div>
+            <div className="absolute top-[25%] left-[20%] text-xs font-semibold text-neutral-500 bg-white/60 px-2 py-1 rounded">Jesús María</div>
+            <div className="absolute top-[40%] left-[35%] text-xs font-semibold text-neutral-500 bg-white/60 px-2 py-1 rounded">Miraflores</div>
+            <div className="absolute top-[55%] left-[25%] text-xs font-semibold text-neutral-500 bg-white/60 px-2 py-1 rounded">Barranco</div>
+            <div className="absolute top-[35%] left-[60%] text-xs font-semibold text-neutral-500 bg-white/60 px-2 py-1 rounded">Surco</div>
+            <div className="absolute top-[25%] left-[50%] text-xs font-semibold text-neutral-500 bg-white/60 px-2 py-1 rounded">San Borja</div>
 
             {/* Pins */}
             {classesWithCoords.map(cls => {
@@ -121,12 +121,12 @@ export default function MapaPage() {
                 >
                   <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full shadow-lg text-xs font-bold whitespace-nowrap transition-all ${
                     isSelected
-                      ? 'bg-purple-700 text-white scale-110'
-                      : 'bg-white text-gray-900 hover:bg-purple-600 hover:text-white hover:scale-105'
+                      ? 'bg-neutral-900 text-white scale-110'
+                      : 'bg-white text-neutral-900 hover:bg-neutral-900 hover:text-white hover:scale-105'
                   }`}>
                     <span>{formatPrice(cls.priceType, cls.price, cls.currency)}</span>
                   </div>
-                  <div className={`w-2 h-2 rounded-full mx-auto -mt-0.5 ${isSelected ? 'bg-purple-700' : 'bg-white border-2 border-gray-300'}`} />
+                  <div className={`w-2 h-2 rounded-full mx-auto -mt-0.5 ${isSelected ? 'bg-neutral-900' : 'bg-white border-2 border-neutral-300'}`} />
                 </button>
               );
             })}
@@ -135,7 +135,7 @@ export default function MapaPage() {
           {/* Selected class popup */}
           {selected && (
             <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-4 z-30">
-              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+              <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
                 <div className="relative">
                   <img src={selected.coverImage} alt={selected.title} className="w-full h-36 object-cover" />
                   <button
@@ -144,26 +144,26 @@ export default function MapaPage() {
                   >
                     <X className="w-4 h-4" />
                   </button>
-                  <span className="absolute top-3 left-3 text-xs font-semibold bg-white text-purple-700 px-2.5 py-1 rounded-full">
+                  <span className="absolute top-3 left-3 text-xs font-semibold bg-white text-neutral-900 px-2.5 py-1 rounded-full">
                     {getTypeLabel(selected.type)}
                   </span>
                 </div>
                 <div className="p-4">
-                  <p className="text-xs text-purple-600 font-semibold">{selected.style}</p>
-                  <h3 className="font-bold text-gray-900 mt-0.5">{selected.title}</h3>
-                  <p className="text-xs text-gray-500 mt-1">{selected.teacher.name}</p>
+                  <p className="text-xs text-neutral-900 font-semibold">{selected.style}</p>
+                  <h3 className="font-bold text-neutral-900 mt-0.5">{selected.title}</h3>
+                  <p className="text-xs text-neutral-500 mt-1">{selected.teacher.name}</p>
                   <div className="flex items-center gap-3 mt-2">
-                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                    <span className="text-xs text-neutral-500 flex items-center gap-1">
                       <MapPin className="w-3 h-3" />{selected.district}
                     </span>
-                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                    <span className="text-xs text-neutral-500 flex items-center gap-1">
                       <Clock className="w-3 h-3" />{formatTimeSlots(selected.timeSlots).split(' | ')[0]}
                     </span>
                   </div>
                   <div className="flex gap-2 mt-3">
                     <Link
                       href={`/clase/${selected.id}`}
-                      className="flex-1 text-center text-sm font-semibold py-2 rounded-xl border border-purple-200 text-purple-700 hover:bg-purple-50 transition-colors flex items-center justify-center gap-1"
+                      className="flex-1 text-center text-sm font-semibold py-2 rounded-xl border border-neutral-200 text-neutral-900 hover:bg-neutral-100 transition-colors flex items-center justify-center gap-1"
                     >
                       Ver clase <ChevronRight className="w-4 h-4" />
                     </Link>
@@ -183,19 +183,19 @@ export default function MapaPage() {
 
           {/* Mobile list - bottom sheet trigger */}
           <div className="md:hidden absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl p-4 max-h-[40vh] overflow-y-auto z-20">
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
-            <p className="text-sm font-bold text-gray-900 mb-3">{classesWithCoords.length} clases cerca</p>
+            <div className="w-10 h-1 bg-neutral-200 rounded-full mx-auto mb-4" />
+            <p className="text-sm font-bold text-neutral-900 mb-3">{classesWithCoords.length} clases cerca</p>
             <div className="flex gap-3 overflow-x-auto pb-2">
               {classesWithCoords.map(cls => (
                 <button
                   key={cls.id}
                   onClick={() => setSelected(cls)}
-                  className="shrink-0 w-48 text-left bg-gray-50 rounded-xl overflow-hidden"
+                  className="shrink-0 w-48 text-left bg-neutral-50 rounded-xl overflow-hidden"
                 >
                   <img src={cls.coverImage} alt={cls.title} className="w-full h-24 object-cover" />
                   <div className="p-2">
-                    <p className="text-xs font-bold text-gray-900 truncate">{cls.title}</p>
-                    <p className="text-xs text-purple-700 font-semibold">{formatPrice(cls.priceType, cls.price, cls.currency)}</p>
+                    <p className="text-xs font-bold text-neutral-900 truncate">{cls.title}</p>
+                    <p className="text-xs text-neutral-900 font-semibold">{formatPrice(cls.priceType, cls.price, cls.currency)}</p>
                   </div>
                 </button>
               ))}
