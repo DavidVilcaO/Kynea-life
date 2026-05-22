@@ -2,7 +2,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Globe, User, BookOpen, Building2 } from 'lucide-react';
+import { Globe, User, BookOpen, Building2, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 type Role = 'alumno' | 'profesor' | 'academia';
 
@@ -13,13 +15,33 @@ const ROLES: { key: Role; icon: React.ElementType; label: string; description: s
 ];
 
 export default function RegistroPage() {
+  const router = useRouter();
   const [role, setRole] = useState<Role>('alumno');
   const [step, setStep] = useState<'role' | 'form'>('role');
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    window.location.href = role === 'alumno' ? '/clases' : '/dashboard';
+    setError('');
+    setLoading(true);
+
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: { data: { name: form.name, role } },
+    });
+
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+      return;
+    }
+
+    router.refresh();
+    router.push(role === 'alumno' ? '/clases' : '/dashboard');
   }
 
   return (
@@ -97,6 +119,11 @@ export default function RegistroPage() {
                 <p className="text-[15px] text-neutral-500 mb-6">Es gratis, sin tarjeta de crédito.</p>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                  {error && (
+                    <div className="bg-red-bg border-l-4 border-red text-[13px] font-medium px-4 py-3 rounded-lg text-red-700">
+                      {error}
+                    </div>
+                  )}
                   <div>
                     <label className="block text-[13px] font-semibold text-neutral-700 mb-1.5">
                       {role === 'academia' ? 'Nombre de la academia' : 'Nombre completo'}
@@ -134,8 +161,9 @@ export default function RegistroPage() {
                     />
                   </div>
 
-                  <button type="submit" className="btn-dark w-full mt-1">
-                    Crear cuenta
+                  <button type="submit" disabled={loading} className="btn-dark w-full mt-1 flex items-center justify-center gap-2">
+                    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {loading ? 'Creando cuenta…' : 'Crear cuenta'}
                   </button>
                 </form>
 

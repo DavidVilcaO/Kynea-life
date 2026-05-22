@@ -1,45 +1,45 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { PlusCircle, Upload, BookOpen, TrendingUp, Clock, Eye, MessageCircle, ChevronRight, ArrowUpRight, Users } from 'lucide-react';
-import { mockClasses, getStatusColor, getStatusLabel, formatPrice, formatTimeSlots, getConversionRate } from '@/lib/mockData';
+import { createClient } from '@/lib/supabase/server';
+import { fetchTeacherClasses } from '@/lib/queries/classes';
+import { getStatusColor, getStatusLabel, formatPrice, formatTimeSlots, getConversionRate } from '@/lib/mockData';
 
-const publishedClasses = mockClasses.filter(c => c.status === 'published');
-const draftClasses = mockClasses.filter(c => c.status === 'draft');
-const totalViews = publishedClasses.reduce((acc, c) => acc + c.metrics.views, 0);
-const totalContacts = publishedClasses.reduce((acc, c) => acc + c.metrics.contacts, 0);
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
-const METRICS = [
-  { label: 'Visualizaciones', value: totalViews,                         icon: Eye,           bg: 'bg-blue-pastel-bg', text: 'text-blue-700',  iconBg: 'bg-blue-pastel/30' },
-  { label: 'Inscripciones',   value: totalContacts,                      icon: MessageCircle, bg: 'bg-pink-50',        text: 'text-pink-600', iconBg: 'bg-pink-100' },
-  { label: 'Tasa conv.',      value: getConversionRate(totalViews, totalContacts), icon: TrendingUp,    bg: 'bg-green-bg',       text: 'text-green-text', iconBg: 'bg-green-bg' },
-  { label: 'Publicadas',      value: publishedClasses.length,            icon: BookOpen,      bg: 'bg-neutral-50',     text: 'text-neutral-700', iconBg: 'bg-neutral-200' },
-  { label: 'Profesores',      value: 3,                                  icon: Users,         bg: 'bg-pink-50',        text: 'text-pink-600',   iconBg: 'bg-pink-100' },
-];
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, role')
+    .eq('id', user.id)
+    .single();
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const [checked, setChecked] = useState(false);
+  if (profile?.role === 'alumno') redirect('/dashboard/alumno');
+
+  const classes = await fetchTeacherClasses(user.id);
+  const publishedClasses = classes.filter(c => c.status === 'published');
+  const draftClasses = classes.filter(c => c.status === 'draft');
+  const totalViews = publishedClasses.reduce((acc, c) => acc + c.metrics.views, 0);
+  const totalContacts = publishedClasses.reduce((acc, c) => acc + c.metrics.contacts, 0);
   const recentClasses = publishedClasses.slice(0, 3);
 
-  useEffect(() => {
-    const role = localStorage.getItem('demo_role');
-    if (role === 'alumno') {
-      router.replace('/dashboard/alumno');
-    } else {
-      setChecked(true);
-    }
-  }, [router]);
+  const METRICS = [
+    { label: 'Visualizaciones', value: totalViews,                              icon: Eye,           bg: 'bg-blue-pastel-bg', text: 'text-blue-700',    iconBg: 'bg-blue-pastel/30' },
+    { label: 'Inscripciones',   value: totalContacts,                           icon: MessageCircle, bg: 'bg-pink-50',        text: 'text-pink-600',   iconBg: 'bg-pink-100' },
+    { label: 'Tasa conv.',      value: getConversionRate(totalViews, totalContacts), icon: TrendingUp,    bg: 'bg-green-bg',       text: 'text-green-text', iconBg: 'bg-green-bg' },
+    { label: 'Publicadas',      value: publishedClasses.length,                 icon: BookOpen,      bg: 'bg-neutral-50',     text: 'text-neutral-700',iconBg: 'bg-neutral-200' },
+    ...(profile?.role === 'academia' ? [{ label: 'Profesores', value: 0, icon: Users, bg: 'bg-pink-50', text: 'text-pink-600', iconBg: 'bg-pink-100' }] : []),
+  ];
 
-  if (!checked) return null;
+  const firstName = profile?.name?.split(' ')[0] ?? 'profe';
 
   return (
     <div className="p-6 lg:p-8 w-full max-w-6xl">
-      {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-[24px] font-black text-neutral-900 tracking-snug">Hola, Academia Ritmo Latino 👋</h1>
+          <h1 className="text-[24px] font-black text-neutral-900 tracking-snug">Hola, {firstName} 👋</h1>
           <p className="text-neutral-500 text-[15px] mt-1">Aquí tienes el resumen de tu actividad</p>
         </div>
         <div className="hidden sm:flex gap-3">
@@ -90,9 +90,15 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="divide-y divide-neutral-50">
-          {recentClasses.map(cls => (
+          {recentClasses.length === 0 ? (
+            <p className="text-[14px] text-neutral-400 px-6 py-8 text-center">Aún no tienes clases publicadas</p>
+          ) : recentClasses.map(cls => (
             <div key={cls.id} className="flex items-center gap-4 p-4 hover:bg-neutral-50 transition-colors">
-              <img src={cls.coverImage} alt={cls.title} className="w-14 h-14 rounded-lg object-cover shrink-0" />
+              {cls.coverImage ? (
+                <img src={cls.coverImage} alt={cls.title} className="w-14 h-14 rounded-lg object-cover shrink-0" />
+              ) : (
+                <div className="w-14 h-14 rounded-lg bg-neutral-100 shrink-0" />
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-semibold text-neutral-900 text-[15px] truncate">{cls.title}</p>
@@ -114,10 +120,7 @@ export default function DashboardPage() {
                   <span className="text-[13px] font-semibold text-neutral-900">{formatPrice(cls.priceType, cls.price, cls.currency)}</span>
                 </div>
               </div>
-              <Link
-                href={`/clases/${cls.id}`}
-                className="text-[13px] text-neutral-500 hover:text-neutral-900 flex items-center gap-1 transition-colors shrink-0"
-              >
+              <Link href={`/clases/${cls.id}`} className="text-[13px] text-neutral-500 hover:text-neutral-900 flex items-center gap-1 transition-colors shrink-0">
                 Ver <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -127,10 +130,7 @@ export default function DashboardPage() {
 
       {/* Quick actions */}
       <div className="grid sm:grid-cols-3 gap-4">
-        <Link
-          href="/dashboard/crear-clase"
-          className="flex items-center gap-4 p-5 bg-neutral-900 rounded-xl text-white hover:bg-neutral-800 transition-colors"
-        >
+        <Link href="/dashboard/crear-clase" className="flex items-center gap-4 p-5 bg-neutral-900 rounded-xl text-white hover:bg-neutral-800 transition-colors">
           <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
             <PlusCircle className="w-6 h-6" />
           </div>
@@ -140,10 +140,7 @@ export default function DashboardPage() {
           </div>
           <ChevronRight className="w-5 h-5 ml-auto text-neutral-400" />
         </Link>
-        <Link
-          href="/dashboard/importar-csv"
-          className="flex items-center gap-4 p-5 bg-white border-2 border-neutral-200 rounded-xl text-neutral-900 hover:border-neutral-900 transition-colors"
-        >
+        <Link href="/dashboard/importar-csv" className="flex items-center gap-4 p-5 bg-white border-2 border-neutral-200 rounded-xl text-neutral-900 hover:border-neutral-900 transition-colors">
           <div className="w-12 h-12 bg-neutral-50 rounded-lg flex items-center justify-center">
             <Upload className="w-6 h-6 text-neutral-600" />
           </div>
@@ -153,19 +150,18 @@ export default function DashboardPage() {
           </div>
           <ChevronRight className="w-5 h-5 ml-auto text-neutral-400" />
         </Link>
-        <Link
-          href="/dashboard/profesores"
-          className="flex items-center gap-4 p-5 bg-pink-50 border-2 border-pink-100 rounded-xl text-neutral-900 hover:border-pink-400 transition-colors"
-        >
-          <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
-            <Users className="w-6 h-6 text-pink-600" />
-          </div>
-          <div>
-            <p className="font-bold text-[15px]">Gestionar profesores</p>
-            <p className="text-[13px] text-neutral-500">3 profesores en tu academia</p>
-          </div>
-          <ChevronRight className="w-5 h-5 ml-auto text-neutral-400" />
-        </Link>
+        {profile?.role === 'academia' && (
+          <Link href="/dashboard/profesores" className="flex items-center gap-4 p-5 bg-pink-50 border-2 border-pink-100 rounded-xl text-neutral-900 hover:border-pink-400 transition-colors">
+            <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
+              <Users className="w-6 h-6 text-pink-600" />
+            </div>
+            <div>
+              <p className="font-bold text-[15px]">Gestionar profesores</p>
+              <p className="text-[13px] text-neutral-500">Profesores en tu academia</p>
+            </div>
+            <ChevronRight className="w-5 h-5 ml-auto text-neutral-400" />
+          </Link>
+        )}
       </div>
     </div>
   );
