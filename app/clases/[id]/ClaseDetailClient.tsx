@@ -46,6 +46,13 @@ export default function ClaseDetailClient({ cls }: { cls: DanceClass }) {
     setSaving(false);
   };
 
+  const handleContactClick = async () => {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    setIsLoggedIn(!!session?.user);
+    setShowContact(true);
+  };
+
   const images = [cls.coverImage, ...(cls.gallery || [])].filter(Boolean);
   const spotsLeft = cls.availableSpots;
   const isFullyBooked = spotsLeft === 0;
@@ -267,7 +274,7 @@ export default function ClaseDetailClient({ cls }: { cls: DanceClass }) {
                 </div>
 
                 <button
-                  onClick={() => setShowContact(true)}
+                  onClick={handleContactClick}
                   disabled={isFullyBooked}
                   className={`w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-btn transition-all text-[15px] mb-3 border-2 ${
                     isFullyBooked
@@ -307,6 +314,31 @@ export default function ClaseDetailClient({ cls }: { cls: DanceClass }) {
           </div>
         </div>
       </div>
+
+      {/* Mobile sticky bottom CTA */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-4 py-3 z-40 flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-[18px] font-black text-neutral-900 leading-none">
+            {formatPrice(cls.priceType, cls.price, cls.currency)}
+          </p>
+          {cls.level && <p className="text-[12px] text-neutral-500 mt-0.5">{cls.level}</p>}
+        </div>
+        <button
+          onClick={handleContactClick}
+          disabled={isFullyBooked}
+          className={`flex items-center gap-2 font-bold py-3 px-5 rounded-btn text-[14px] shrink-0 transition-all ${
+            isFullyBooked
+              ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+              : 'bg-[#25D366] hover:bg-[#20BC5A] text-white'
+          }`}
+        >
+          <MessageCircle className="w-4 h-4" />
+          {isFullyBooked ? 'Sin cupos' : 'Contactar'}
+        </button>
+      </div>
+
+      {/* Extra padding so content isn't hidden behind mobile CTA */}
+      <div className="lg:hidden h-20" />
 
       {showContact && (
         <ContactModal cls={cls} onClose={() => setShowContact(false)} isLoggedIn={isLoggedIn} />

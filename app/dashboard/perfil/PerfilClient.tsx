@@ -1,8 +1,10 @@
 'use client';
-import { useState, useTransition } from 'react';
-import { Save, Upload, Loader2 } from 'lucide-react';
+import { useState, useTransition, useRef } from 'react';
+import { Save, Upload, Loader2, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { DANCE_STYLES } from '@/lib/mockData';
 import { updateProfile } from '@/lib/actions/classes';
+import { createClient } from '@/lib/supabase/client';
 
 interface Profile {
   name: string | null;
@@ -20,9 +22,13 @@ interface Profile {
 }
 
 export default function PerfilClient({ profile }: { profile: Profile }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState(profile.photo_url ?? '');
 
   const [name, setName] = useState(profile.name ?? '');
   const [bio, setBio] = useState(profile.bio ?? '');
@@ -50,6 +56,34 @@ export default function PerfilClient({ profile }: { profile: Profile }) {
 
   const toggleStyle = (s: string) => {
     setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  };
+
+  const handlePhotoUpload = async (file: File) => {
+    if (file.size > 2 * 1024 * 1024) { setError('La foto debe ser menor a 2MB'); return; }
+    setUploadingPhoto(true);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No autenticado');
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const path = `${session.user.id}/profile.${ext}`;
+      const { error: upErr } = await supabase.storage.from('class-images').upload(path, file, { upsert: true });
+      if (upErr) throw new Error(upErr.message);
+      const { data: { publicUrl } } = supabase.storage.from('class-images').getPublicUrl(path);
+      setPhotoUrl(publicUrl);
+      await updateProfile({ photo_url: publicUrl });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al subir foto');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
   };
 
   const handleSave = () => {
@@ -90,16 +124,29 @@ export default function PerfilClient({ profile }: { profile: Profile }) {
         <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-6">
           <h2 className="font-bold text-neutral-900 mb-4">Foto / Logo</h2>
           <div className="flex items-center gap-5">
-            {profile.photo_url ? (
-              <img src={profile.photo_url} alt="Profile" className="w-24 h-24 rounded-xl object-cover" />
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); }}
+            />
+            {photoUrl ? (
+              <img src={photoUrl} alt="Profile" className="w-24 h-24 rounded-xl object-cover" />
             ) : (
               <div className="w-24 h-24 rounded-xl bg-neutral-200 flex items-center justify-center text-3xl font-bold text-neutral-500">
                 {name.charAt(0).toUpperCase()}
               </div>
             )}
             <div>
-              <button className="flex items-center gap-2 text-sm font-semibold text-neutral-900 border border-neutral-200 px-4 py-2 rounded-btn hover:bg-neutral-100 mb-2">
-                <Upload className="w-4 h-4" /> Cambiar foto
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="flex items-center gap-2 text-sm font-semibold text-neutral-900 border border-neutral-200 px-4 py-2 rounded-btn hover:bg-neutral-100 mb-2 disabled:opacity-50"
+              >
+                {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                {uploadingPhoto ? 'Subiendo…' : 'Cambiar foto'}
               </button>
               <p className="text-xs text-neutral-400">PNG o JPG · Máx. 2MB</p>
             </div>
@@ -208,14 +255,23 @@ export default function PerfilClient({ profile }: { profile: Profile }) {
           <div className="bg-red-bg border-l-4 border-red text-[13px] font-medium px-4 py-3 rounded-lg text-red-700">{error}</div>
         )}
 
-        <button
-          onClick={handleSave}
-          disabled={isPending}
-          className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-700 disabled:opacity-50 text-white font-bold px-6 py-3 rounded-btn transition-colors"
-        >
-          {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {saved ? '¡Guardado!' : isPending ? 'Guardando…' : 'Guardar cambios'}
-        </button>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <button
+            onClick={handleSave}
+            disabled={isPending}
+            className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-700 disabled:opacity-50 text-white font-bold px-6 py-3 rounded-btn transition-colors"
+          >
+            {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saved ? '¡Guardado!' : isPending ? 'Guardando…' : 'Guardar cambios'}
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-sm font-medium text-neutral-500 hover:text-red-500 hover:bg-red-50 px-4 py-3 rounded-btn border border-neutral-200 transition-colors"
+          >
+            <LogOut className="w-4 h-4" /> Cerrar sesión
+          </button>
+        </div>
       </div>
     </div>
   );
