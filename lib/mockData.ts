@@ -7,7 +7,7 @@ export const DANCE_STYLES = [
   'Salsa', 'Tango', 'Urbano', 'Zumba',
 ];
 
-export const LEVELS = ['Inicial', 'Básico', 'Intermedio', 'Avanzado', 'Todos los niveles'];
+export const LEVELS = ['Iniciantes', 'Principiantes', 'Básico', 'Intermedio', 'Avanzado', 'Todos los niveles'];
 export const CITIES = ['Lima', 'Arequipa', 'Cusco', 'Trujillo', 'Piura'];
 export const LIMA_DISTRICTS = [
   'Miraflores', 'San Isidro', 'Barranco', 'Surco', 'San Borja',
@@ -114,7 +114,7 @@ export const mockClasses: DanceClass[] = [
     footwear: 'Zapatos de salsa o zapatillas',
     clothing: 'Ropa cómoda y transpirable',
     toBring: ['Agua', 'Toalla'],
-    ageGroup: 'Adultos',
+    ageGroup: 'Mayor +18 años',
     status: 'published',
     teacher: mockTeachers[0],
     metrics: { views: 342, contacts: 34, saved: 28 },
@@ -134,7 +134,7 @@ export const mockClasses: DanceClass[] = [
     startDate: '2026-06-14',
     endDate: '2026-06-14',
     timeSlots: [{ days: ['Sábado'], startTime: '10:00', endTime: '13:00' }],
-    priceType: 'Precio único',
+    priceType: 'Paquete',
     price: 120,
     currency: 'PEN',
     maxSpots: 15,
@@ -149,7 +149,7 @@ export const mockClasses: DanceClass[] = [
     footwear: 'Tacos / heels (mínimo 5 cm)',
     clothing: 'Outfit de baile',
     toBring: ['Agua', 'Rodilleras'],
-    ageGroup: 'Adultos',
+    ageGroup: 'Mayor +18 años',
     status: 'published',
     teacher: mockTeachers[1],
     metrics: { views: 198, contacts: 21, saved: 17 },
@@ -185,7 +185,7 @@ export const mockClasses: DanceClass[] = [
     footwear: 'Zapatillas',
     clothing: 'Ropa cómoda y holgada',
     toBring: ['Agua', 'Toalla'],
-    ageGroup: 'Todas las edades',
+    ageGroup: 'Apto para todos',
     status: 'published',
     teacher: mockTeachers[2],
     metrics: { views: 156, contacts: 18, saved: 22 },
@@ -203,7 +203,7 @@ export const mockClasses: DanceClass[] = [
     startDate: '2026-06-07',
     endDate: '2026-06-07',
     timeSlots: [{ days: ['Domingo'], startTime: '09:00', endTime: '12:00' }],
-    priceType: 'Precio único',
+    priceType: 'Paquete',
     price: 150,
     currency: 'PEN',
     maxSpots: 12,
@@ -230,7 +230,7 @@ export const mockClasses: DanceClass[] = [
     type: 'clase',
     title: 'Bachata Sensual – Principiantes',
     style: 'Bachata',
-    level: 'Inicial',
+    level: 'Iniciantes',
     shortDescription: 'Inicia tu camino en la bachata sensual. Ritmo, conexión y sensualidad desde cero.',
     fullDescription: 'Clases diseñadas para quienes nunca han bailado bachata. Aprenderás el ritmo, pasos básicos y conexión con pareja.',
     startDate: '2026-06-03',
@@ -284,7 +284,7 @@ export const mockClasses: DanceClass[] = [
   },
   {
     id: 'c7',
-    type: 'intensivo',
+    type: 'evento',
     title: 'Intensivo de Contemporáneo',
     style: 'Contemporáneo',
     level: 'Avanzado',
@@ -293,7 +293,7 @@ export const mockClasses: DanceClass[] = [
     startDate: '2026-07-07',
     endDate: '2026-07-11',
     timeSlots: [{ days: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'], startTime: '10:00', endTime: '14:00' }],
-    priceType: 'Precio único',
+    priceType: 'Paquete',
     price: 350,
     currency: 'PEN',
     maxSpots: 10,
@@ -305,7 +305,7 @@ export const mockClasses: DanceClass[] = [
     lat: -12.1515,
     lng: -77.0219,
     coverImage: 'https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=800&q=80',
-    footwear: 'Pies descalzos',
+    footwear: 'Medias',
     clothing: 'Ropa cómoda que permita movimiento amplio',
     toBring: ['Agua', 'Mat'],
     prerequisites: 'Experiencia previa en danza',
@@ -341,7 +341,7 @@ export const mockClasses: DanceClass[] = [
     lng: -76.9876,
     coverImage: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80',
     footwear: 'Zapatillas cómodas',
-    ageGroup: 'Adolescentes',
+    ageGroup: 'Niños',
     status: 'published',
     teacher: mockTeachers[2],
     metrics: { views: 421, contacts: 45, saved: 58 },
@@ -400,7 +400,8 @@ export function getStatusColor(status: string): string {
 export function getTypeLabel(type: string): string {
   const map: Record<string, string> = {
     clase: 'Clase', taller: 'Taller', curso: 'Curso',
-    masterclass: 'Masterclass', intensivo: 'Intensivo',
+    masterclass: 'Masterclass', evento: 'Evento', 'clase-suelta': 'Clase suelta',
+    intensivo: 'Evento',
   };
   return map[type] || type;
 }

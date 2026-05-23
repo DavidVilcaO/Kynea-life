@@ -18,6 +18,10 @@
   --color-blue-pastel-dark: #8DB8F5;
   --color-blue-pastel-bg:   #EFF6FF;
 
+  --color-primary:     #8a11bc;
+  --color-primary-dark:#6d0d97;
+  --color-primary-bg:  #f5e8fc;
+
   --color-green:      #00D68F;
   --color-green-dark: #00B07A;
   --color-green-text: #00745A;
@@ -133,9 +137,9 @@
     @apply inline-flex items-center justify-center gap-2
            font-semibold text-[15px]
            px-7 py-[14px] rounded-btn border-2
-           bg-blue-pastel border-blue-pastel text-neutral-900
+           bg-primary border-primary text-white
            transition-all duration-200 cursor-pointer
-           hover:bg-blue-pastel-dark hover:border-blue-pastel-dark;
+           hover:bg-primary-dark hover:border-primary-dark;
   }
 
   .btn-outline {
@@ -218,7 +222,7 @@
   }
 
   /* ══ HERO SECTIONS ══ */
-  .hero-section       { @apply bg-pink-400 relative overflow-hidden; }
+  .hero-section       { @apply bg-primary relative overflow-hidden; }
   .hero-section-white { @apply bg-white relative overflow-hidden; }
 }
 
