@@ -219,13 +219,13 @@ export default function HomePage() {
                 🇵🇪 Perú · Plataforma de danza
               </div>
 
-              <h1 className="text-[48px] lg:text-[66px] font-black tracking-tighter text-neutral-900 leading-none mb-6">
+              <h1 className="text-[48px] lg:text-[66px] font-black tracking-tighter text-white leading-none mb-6">
                 Donde la pasión<br />
                 por la danza<br />
                 cobra vida.
               </h1>
 
-              <p className="text-[17px] text-neutral-700 mb-10 leading-relaxed max-w-md">
+              <p className="text-[17px] text-white/80 mb-10 leading-relaxed max-w-md">
                 Encuentra clases de baile, audiciones, shows, eventos culturales y tiendas especializadas.
               </p>
 
@@ -261,8 +261,8 @@ export default function HomePage() {
               {/* Trust items */}
               <div className="flex flex-wrap gap-x-6 gap-y-2">
                 {['Profesores verificados', 'Contacto directo'].map(item => (
-                  <span key={item} className="flex items-center gap-1.5 text-[13px] text-neutral-700">
-                    <Check className="w-3.5 h-3.5 text-neutral-900" />
+                  <span key={item} className="flex items-center gap-1.5 text-[13px] text-white/70">
+                    <Check className="w-3.5 h-3.5 text-white" />
                     {item}
                   </span>
                 ))}
@@ -541,10 +541,10 @@ export default function HomePage() {
       {/* ── CTA PROFESORES (sección rosa) ── */}
       <section className="hero-section py-20">
         <div className="max-w-[880px] mx-auto px-6 text-center">
-          <h2 className="text-[38px] font-black tracking-snug text-neutral-900 mb-4">
+          <h2 className="text-[38px] font-black tracking-snug text-white mb-4">
             ¿Eres profesor o academia?
           </h2>
-          <p className="text-[17px] text-neutral-700 mb-10 max-w-xl mx-auto leading-relaxed">
+          <p className="text-[17px] text-white/80 mb-10 max-w-xl mx-auto leading-relaxed">
             Publica tus clases gratis y llega a cientos de alumnos en todo el Perú. Sin comisiones.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

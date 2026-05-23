@@ -3,12 +3,13 @@
 /* ─── DESIGN TOKENS (Preply-inspired) ─────────────────────────── */
 @theme {
   /* COLORES ── */
-  --color-pink-50:  #FFF0F7;
-  --color-pink-100: #FFD6EC;
-  --color-pink-200: #FF9FD0;
-  --color-pink-400: #FF5CAA;
-  --color-pink-600: #E8439A;
-  --color-pink-800: #B02E75;
+  /* Escala morada (reemplaza la escala rosa — todos los bg-pink-*, text-pink-* usan estos valores) */
+  --color-pink-50:  #f5e8fc;
+  --color-pink-100: #e8c5f7;
+  --color-pink-200: #d499f0;
+  --color-pink-400: #8a11bc;
+  --color-pink-600: #6d0d97;
+  --color-pink-800: #4a0a67;
 
   --color-yellow:      #FFE040;
   --color-yellow-dark: #EBC800;
