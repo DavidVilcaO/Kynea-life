@@ -12,7 +12,10 @@ interface ContactModalProps {
 }
 
 export default function ContactModal({ cls, onClose, isLoggedIn = false }: ContactModalProps) {
-  const whatsappUrl = buildWhatsAppMessage(cls.style, cls.startDate, cls.teacher.whatsapp, cls.title);
+  const hasWhatsapp = !!cls.teacher.whatsapp;
+  const whatsappUrl = hasWhatsapp
+    ? buildWhatsAppMessage(cls.style, cls.startDate, cls.teacher.whatsapp, cls.title)
+    : '';
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4">
@@ -64,11 +67,48 @@ export default function ContactModal({ cls, onClose, isLoggedIn = false }: Conta
               </p>
             </div>
           </div>
-        ) : (
-          /* ── Logueado: mostrar contacto ── */
+        ) : !hasWhatsapp ? (
+          /* ── Logueado pero profesor sin WhatsApp configurado ── */
           <div className="px-6 pb-8">
             <div className="flex items-center gap-3 mb-6 p-4 bg-neutral-50 rounded-xl border border-neutral-200">
-              <img src={cls.teacher.photo} alt={cls.teacher.name} className="w-12 h-12 rounded-full object-cover" />
+              {cls.teacher.photo ? (
+                <img src={cls.teacher.photo} alt={cls.teacher.name} className="w-12 h-12 rounded-full object-cover" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center text-lg font-bold text-neutral-500">
+                  {cls.teacher.name.charAt(0)}
+                </div>
+              )}
+              <div>
+                <p className="font-bold text-neutral-900 text-[15px]">{cls.teacher.name}</p>
+                <p className="text-[13px] text-neutral-500">{cls.title}</p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5">
+              <p className="text-[14px] font-semibold text-amber-800 mb-1">WhatsApp no disponible</p>
+              <p className="text-[13px] text-amber-700 leading-relaxed">
+                Este profesor aún no ha agregado su número de WhatsApp. Intenta más tarde o explora otras clases similares.
+              </p>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="w-full btn-outline"
+            >
+              Entendido
+            </button>
+          </div>
+        ) : (
+          /* ── Logueado + tiene WhatsApp (fallback — normalmente abre directo) ── */
+          <div className="px-6 pb-8">
+            <div className="flex items-center gap-3 mb-6 p-4 bg-neutral-50 rounded-xl border border-neutral-200">
+              {cls.teacher.photo ? (
+                <img src={cls.teacher.photo} alt={cls.teacher.name} className="w-12 h-12 rounded-full object-cover" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center text-lg font-bold text-neutral-500">
+                  {cls.teacher.name.charAt(0)}
+                </div>
+              )}
               <div>
                 <p className="font-bold text-neutral-900 text-[15px]">{cls.teacher.name}</p>
                 <p className="text-[13px] text-neutral-500">{cls.title}</p>
@@ -81,13 +121,6 @@ export default function ContactModal({ cls, onClose, isLoggedIn = false }: Conta
                 <span className="text-[13px] font-semibold text-green-text">WhatsApp del profesor</span>
               </div>
               <p className="text-[20px] font-bold text-neutral-900">{cls.teacher.whatsapp}</p>
-            </div>
-
-            <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-3 mb-5">
-              <p className="text-[13px] text-neutral-500 font-semibold mb-1">Mensaje sugerido:</p>
-              <p className="text-[13px] text-neutral-700 italic leading-relaxed">
-                "Hola, vi tu clase de {cls.style} en Kynea y me gustaría asistir. ¿Está disponible?"
-              </p>
             </div>
 
             <a

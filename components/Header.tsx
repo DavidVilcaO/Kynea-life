@@ -18,11 +18,10 @@ interface Profile {
   photo_url: string | null;
 }
 
-// Demo users for the preview switcher (shown only when not logged in)
-const DEMO_USERS: Record<Role, { name: string; type: string; photo: string }> = {
-  alumno:   { name: 'Laura García',          type: 'Alumna',   photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&q=80' },
-  profesor: { name: 'Sofía Vega',            type: 'Profesora',photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&q=80' },
-  academia: { name: 'Academia Ritmo Latino', type: 'Academia', photo: 'https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=80&q=80' },
+const ROLE_LABEL: Record<Role, string> = {
+  alumno:   'Alumno',
+  profesor: 'Profesor',
+  academia: 'Academia',
 };
 
 const NAV_LINKS = [
@@ -34,8 +33,6 @@ export default function Header({ transparent = false }: { transparent?: boolean 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
-  // Demo switcher — only visible when not logged in
-  const [demoRole, setDemoRole] = useState<Role>('alumno');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,17 +52,13 @@ export default function Header({ transparent = false }: { transparent?: boolean 
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        loadProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
+      if (session?.user) loadProfile(session.user.id);
+      else setProfile(null);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -78,12 +71,6 @@ export default function Header({ transparent = false }: { transparent?: boolean 
 
   const isLoggedIn = !!profile;
   const canPublish = profile?.role === 'profesor' || profile?.role === 'academia';
-
-  // For display: real profile when logged in, demo user when not
-  const displayName = profile?.name ?? DEMO_USERS[demoRole].name;
-  const displayType = profile ? profile.role : DEMO_USERS[demoRole].type;
-  const displayPhoto = profile?.photo_url ?? (isLoggedIn ? null : DEMO_USERS[demoRole].photo);
-  const demoCanPublish = !isLoggedIn && (demoRole === 'profesor' || demoRole === 'academia');
 
   async function logout() {
     const supabase = createClient();
@@ -100,24 +87,22 @@ export default function Header({ transparent = false }: { transparent?: boolean 
     : 'nav-link';
 
   function Avatar({ size = 8, className = '' }: { size?: number; className?: string }) {
-    if (displayPhoto) {
+    if (profile?.photo_url) {
       return (
         <img
-          src={displayPhoto}
-          alt={displayName}
+          src={profile.photo_url}
+          alt={profile.name}
           className={`w-${size} h-${size} rounded-full object-cover ${className}`}
         />
       );
     }
+    const initial = profile?.name?.charAt(0).toUpperCase() ?? '?';
     return (
       <div className={`w-${size} h-${size} rounded-full bg-neutral-900 text-white flex items-center justify-center text-sm font-bold shrink-0 ${className}`}>
-        {displayName.charAt(0).toUpperCase()}
+        {initial}
       </div>
     );
   }
-
-  // Show user section when logged in OR demo role is professor/academia (to demo the Publicar button)
-  const showUserState = isLoggedIn || demoRole !== 'alumno';
 
   return (
     <header className={
@@ -175,10 +160,10 @@ export default function Header({ transparent = false }: { transparent?: boolean 
                   <Avatar size={8} />
                   <div className="text-left hidden lg:block">
                     <p className={`text-[13px] font-bold leading-tight ${transparent ? 'text-white' : 'text-neutral-900'}`}>
-                      {displayName.split(' ')[0]}
+                      {profile.name.split(' ')[0]}
                     </p>
                     <p className={`text-[11px] leading-tight ${transparent ? 'text-white/70' : 'text-neutral-500'}`}>
-                      {displayType}
+                      {ROLE_LABEL[profile.role]}
                     </p>
                   </div>
                   <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${userMenuOpen ? 'rotate-180' : ''} ${transparent ? 'text-white/70' : 'text-neutral-400'}`} />
@@ -189,11 +174,10 @@ export default function Header({ transparent = false }: { transparent?: boolean 
                     <div className="px-4 py-3 border-b border-neutral-100 flex items-center gap-3">
                       <Avatar size={9} />
                       <div className="min-w-0">
-                        <p className="text-[13px] font-bold text-neutral-900 truncate">{displayName}</p>
-                        <p className="text-[11px] text-neutral-500">{displayType}</p>
+                        <p className="text-[13px] font-bold text-neutral-900 truncate">{profile.name}</p>
+                        <p className="text-[11px] text-neutral-500">{ROLE_LABEL[profile.role]}</p>
                       </div>
                     </div>
-
                     <Link href="/dashboard" onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-[14px] text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors">
                       <LayoutDashboard className="w-4 h-4 shrink-0" /> Mi panel
@@ -206,7 +190,6 @@ export default function Header({ transparent = false }: { transparent?: boolean 
                       className="flex items-center gap-3 px-4 py-2.5 text-[14px] text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors">
                       <Settings className="w-4 h-4 shrink-0" /> Configuración
                     </Link>
-
                     <div className="border-t border-neutral-100">
                       <button onClick={logout}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-[14px] text-neutral-500 hover:text-red-500 hover:bg-red-50 transition-colors">
@@ -219,17 +202,6 @@ export default function Header({ transparent = false }: { transparent?: boolean 
             </>
           ) : (
             <>
-              {/* Demo mode: show Publicar clase if demo role can publish */}
-              {demoCanPublish && (
-                <Link href="/registro"
-                  className={`text-[15px] font-bold px-5 py-2 rounded-btn transition-all flex items-center gap-2 ${
-                    transparent
-                      ? 'bg-white text-neutral-900 hover:bg-neutral-100'
-                      : 'bg-neutral-900 text-white hover:bg-neutral-800'
-                  }`}>
-                  <PlusCircle className="w-4 h-4" /> Publicar clase
-                </Link>
-              )}
               <Link href="/login"
                 className={`text-[15px] font-semibold px-5 py-2 rounded-btn border-2 transition-all ${
                   transparent
@@ -238,16 +210,14 @@ export default function Header({ transparent = false }: { transparent?: boolean 
                 }`}>
                 Iniciar sesión
               </Link>
-              {!demoCanPublish && (
-                <Link href="/registro"
-                  className={`text-[15px] font-bold px-5 py-2 rounded-btn transition-all ${
-                    transparent
-                      ? 'bg-white text-neutral-900 hover:bg-neutral-100'
-                      : 'bg-neutral-900 text-white hover:bg-neutral-800'
-                  }`}>
-                  Publicar clase
-                </Link>
-              )}
+              <Link href="/registro"
+                className={`text-[15px] font-bold px-5 py-2 rounded-btn transition-all ${
+                  transparent
+                    ? 'bg-white text-neutral-900 hover:bg-neutral-100'
+                    : 'bg-neutral-900 text-white hover:bg-neutral-800'
+                }`}>
+                Publicar clase
+              </Link>
             </>
           )}
         </div>
@@ -276,13 +246,13 @@ export default function Header({ transparent = false }: { transparent?: boolean 
             <div className="flex items-center gap-3 px-5 py-4 border-b border-neutral-100">
               <Avatar size={11} />
               <div>
-                <p className="text-[15px] font-bold text-neutral-900">{displayName}</p>
-                <p className="text-[13px] text-neutral-500">{displayType}</p>
+                <p className="text-[15px] font-bold text-neutral-900">{profile.name}</p>
+                <p className="text-[13px] text-neutral-500">{ROLE_LABEL[profile.role]}</p>
               </div>
             </div>
           ) : (
             <div className="px-5 py-4 border-b border-neutral-100">
-              <p className="text-[14px] text-neutral-500">¿Eres profesor o academia?</p>
+              <p className="text-[14px] text-neutral-500">Encuentra clases de baile en el Perú</p>
             </div>
           )}
 
@@ -297,7 +267,7 @@ export default function Header({ transparent = false }: { transparent?: boolean 
           </div>
 
           {/* Auth-dependent actions */}
-          <div className="px-3 pb-2 border-t border-neutral-100">
+          <div className="px-3 pb-4 border-t border-neutral-100">
             {isLoggedIn ? (
               <>
                 <Link href="/dashboard" onClick={() => setMobileOpen(false)}
@@ -335,28 +305,6 @@ export default function Header({ transparent = false }: { transparent?: boolean 
                 </Link>
               </>
             )}
-          </div>
-
-          {/* Demo role switcher — always visible for testing */}
-          <div className="px-5 py-4 border-t border-neutral-100 bg-neutral-50">
-            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-2.5">
-              Ver demo como
-            </p>
-            <div className="flex gap-1.5">
-              {(['alumno', 'profesor', 'academia'] as const).map(r => (
-                <button
-                  key={r}
-                  onClick={() => { setDemoRole(r); setMobileOpen(false); }}
-                  className={`flex-1 text-[13px] font-bold py-2 rounded-xl transition-all ${
-                    demoRole === r
-                      ? 'bg-neutral-900 text-white'
-                      : 'bg-white text-neutral-500 border border-neutral-200 hover:border-neutral-400'
-                  }`}
-                >
-                  {r === 'alumno' ? 'Alumno' : r === 'profesor' ? 'Profesor' : 'Academia'}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       )}

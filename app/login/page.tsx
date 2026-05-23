@@ -6,12 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Globe, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
-// Demo accounts for easy testing — these must exist in your Supabase project
-const DEMO_ACCOUNTS = [
-  { email: 'alumno@kynea.pe',   label: 'Alumno demo',   redirect: '/clases' },
-  { email: 'profesor@kynea.pe', label: 'Profesor demo',  redirect: '/dashboard' },
-  { email: 'academia@kynea.pe', label: 'Academia demo',  redirect: '/dashboard' },
-];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,6 +13,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,23 +42,6 @@ export default function LoginPage() {
     router.push(profile?.role === 'alumno' ? '/clases' : '/dashboard');
   }
 
-  async function loginAsDemo(demoEmail: string, demoRedirect: string) {
-    setLoading(true);
-    setError('');
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: demoEmail,
-      password: 'demo1234',
-    });
-    if (authError) {
-      setError('Las cuentas demo no están configuradas aún en Supabase.');
-      setLoading(false);
-      return;
-    }
-    router.refresh();
-    router.push(demoRedirect);
-  }
-
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col">
       <header className="bg-white border-b border-neutral-200 px-6 py-4">
@@ -76,23 +55,6 @@ export default function LoginPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-8">
             <h1 className="text-[24px] font-black text-neutral-900 tracking-snug mb-1">Iniciar sesión</h1>
             <p className="text-[15px] text-neutral-500 mb-6">Bienvenido de vuelta a Kynea</p>
-
-            {/* Demo accounts */}
-            <div className="bg-yellow-bg border border-yellow-dark/30 rounded-xl p-4 mb-6">
-              <p className="text-[11px] font-bold text-neutral-800 uppercase tracking-wider mb-2">Acceso demo rápido</p>
-              <div className="flex gap-2 flex-wrap">
-                {DEMO_ACCOUNTS.map(a => (
-                  <button
-                    key={a.email}
-                    onClick={() => loginAsDemo(a.email, a.redirect)}
-                    disabled={loading}
-                    className="flex-1 text-[13px] font-semibold bg-white border border-neutral-200 hover:border-neutral-900 text-neutral-800 py-2 rounded-md transition-all disabled:opacity-50"
-                  >
-                    {a.label}
-                  </button>
-                ))}
-              </div>
-            </div>
 
             <button className="w-full btn-outline mb-4" type="button">
               <Globe className="w-4 h-4" />

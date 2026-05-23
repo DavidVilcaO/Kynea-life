@@ -135,25 +135,30 @@ export default function DashboardSidebar({ profile }: { profile: Profile }) {
         </div>
       </aside>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — always includes Perfil as last tab */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 z-50 px-2 py-2">
         <div className="flex justify-around">
-          {NAV.slice(0, 5).map(item => {
-            const Icon = item.icon;
-            const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center gap-1 px-2 py-1 rounded-lg transition-colors ${
-                  active ? 'text-neutral-900' : 'text-neutral-400'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="text-xs">{item.label.split(' ')[0]}</span>
-              </Link>
-            );
-          })}
+          {(() => {
+            const perfilItem = NAV.find(i => i.href === '/dashboard/perfil');
+            const others = NAV.filter(i => i.href !== '/dashboard/perfil').slice(0, 4);
+            const mobileItems = perfilItem ? [...others, perfilItem] : NAV.slice(0, 5);
+            return mobileItems.map(item => {
+              const Icon = item.icon;
+              const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex flex-col items-center gap-1 px-2 py-1 rounded-lg transition-colors ${
+                    active ? 'text-neutral-900' : 'text-neutral-400'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="text-xs">{item.label.split(' ')[0]}</span>
+                </Link>
+              );
+            });
+          })()}
         </div>
       </div>
     </>
