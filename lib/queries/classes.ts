@@ -49,6 +49,7 @@ export function mapDbClassToType(row: any): DanceClass {
     timeSlots:        (row.time_slots ?? []) as TimeSlot[],
     priceType:        row.price_type as PriceType,
     price:            Number(row.price ?? 0),
+    offerPrice:       row.offer_price ? Number(row.offer_price) : undefined,
     currency:         row.currency ?? 'PEN',
     maxSpots:         row.max_spots,
     availableSpots:   row.available_spots,
@@ -74,6 +75,7 @@ export function mapDbClassToType(row: any): DanceClass {
     toBring:          row.to_bring ?? [],
     ageGroup:         row.age_group,
     prerequisites:    row.prerequisites,
+    contactMode:      (row.contact_mode ?? 'whatsapp') as 'whatsapp' | 'instagram' | 'ambos',
     status:           row.status as ClassStatus,
     teacher:          row.teacher ? mapTeacher(row.teacher) : ({} as Teacher),
     metrics: {

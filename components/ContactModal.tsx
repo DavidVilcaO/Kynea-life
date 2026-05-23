@@ -1,7 +1,14 @@
 'use client';
-import { useState } from 'react';
 import Link from 'next/link';
 import { X, MessageCircle, Globe, Phone } from 'lucide-react';
+
+function IgIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+    </svg>
+  );
+}
 import { DanceClass } from '@/lib/types';
 import { buildWhatsAppMessage } from '@/lib/mockData';
 
@@ -9,13 +16,20 @@ interface ContactModalProps {
   cls: DanceClass;
   onClose: () => void;
   isLoggedIn?: boolean;
+  contactType?: 'whatsapp' | 'instagram';
 }
 
-export default function ContactModal({ cls, onClose, isLoggedIn = false }: ContactModalProps) {
+export default function ContactModal({ cls, onClose, isLoggedIn = false, contactType = 'whatsapp' }: ContactModalProps) {
   const hasWhatsapp = !!cls.teacher.whatsapp;
+  const hasInstagram = !!cls.teacher.instagram;
   const whatsappUrl = hasWhatsapp
     ? buildWhatsAppMessage(cls.style, cls.startDate, cls.teacher.whatsapp, cls.title)
     : '';
+  const instagramHandle = hasInstagram
+    ? (cls.teacher.instagram!.startsWith('@') ? cls.teacher.instagram!.slice(1) : cls.teacher.instagram!)
+    : '';
+
+  const hasContact = contactType === 'instagram' ? hasInstagram : hasWhatsapp;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4">
@@ -35,7 +49,13 @@ export default function ContactModal({ cls, onClose, isLoggedIn = false }: Conta
           <div className="px-6 pb-8">
             <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4 mb-6 flex items-start gap-3">
               <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
-                <img src={cls.teacher.photo} alt={cls.teacher.name} className="w-full h-full object-cover" />
+                {cls.teacher.photo ? (
+                  <img src={cls.teacher.photo} alt={cls.teacher.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-lg bg-neutral-200 flex items-center justify-center text-lg font-bold text-neutral-500">
+                    {cls.teacher.name.charAt(0)}
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-[15px] font-bold text-neutral-900">{cls.teacher.name}</p>
@@ -44,7 +64,7 @@ export default function ContactModal({ cls, onClose, isLoggedIn = false }: Conta
             </div>
 
             <p className="text-[15px] text-neutral-600 mb-6 text-center leading-relaxed">
-              Crea una cuenta gratis para ver el número de WhatsApp del profesor y coordinar directamente.
+              Crea una cuenta gratis para ver el contacto del profesor y coordinar directamente.
             </p>
 
             <div className="flex flex-col gap-3">
@@ -67,8 +87,8 @@ export default function ContactModal({ cls, onClose, isLoggedIn = false }: Conta
               </p>
             </div>
           </div>
-        ) : !hasWhatsapp ? (
-          /* ── Logueado pero profesor sin WhatsApp configurado ── */
+        ) : !hasContact ? (
+          /* ── Logueado pero sin contacto configurado ── */
           <div className="px-6 pb-8">
             <div className="flex items-center gap-3 mb-6 p-4 bg-neutral-50 rounded-xl border border-neutral-200">
               {cls.teacher.photo ? (
@@ -85,21 +105,18 @@ export default function ContactModal({ cls, onClose, isLoggedIn = false }: Conta
             </div>
 
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5">
-              <p className="text-[14px] font-semibold text-amber-800 mb-1">WhatsApp no disponible</p>
+              <p className="text-[14px] font-semibold text-amber-800 mb-1">
+                {contactType === 'instagram' ? 'Instagram no disponible' : 'WhatsApp no disponible'}
+              </p>
               <p className="text-[13px] text-amber-700 leading-relaxed">
-                Este profesor aún no ha agregado su número de WhatsApp. Intenta más tarde o explora otras clases similares.
+                Este profesor aún no ha agregado su {contactType === 'instagram' ? 'Instagram' : 'número de WhatsApp'}. Intenta más tarde o explora otras clases similares.
               </p>
             </div>
 
-            <button
-              onClick={onClose}
-              className="w-full btn-outline"
-            >
-              Entendido
-            </button>
+            <button onClick={onClose} className="w-full btn-outline">Entendido</button>
           </div>
         ) : (
-          /* ── Logueado + tiene WhatsApp (fallback — normalmente abre directo) ── */
+          /* ── Logueado + tiene contacto (fallback — normalmente abre directo) ── */
           <div className="px-6 pb-8">
             <div className="flex items-center gap-3 mb-6 p-4 bg-neutral-50 rounded-xl border border-neutral-200">
               {cls.teacher.photo ? (
@@ -115,24 +132,47 @@ export default function ContactModal({ cls, onClose, isLoggedIn = false }: Conta
               </div>
             </div>
 
-            <div className="bg-green-bg border border-green-bg rounded-xl p-4 mb-5">
-              <div className="flex items-center gap-2 mb-1">
-                <Phone className="w-4 h-4 text-green-text" />
-                <span className="text-[13px] font-semibold text-green-text">WhatsApp del profesor</span>
-              </div>
-              <p className="text-[20px] font-bold text-neutral-900">{cls.teacher.whatsapp}</p>
-            </div>
-
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={onClose}
-              className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20BC5A] text-white font-bold py-3.5 rounded-btn transition-colors"
-            >
-              <MessageCircle className="w-5 h-5" />
-              Abrir WhatsApp
-            </a>
+            {contactType === 'instagram' ? (
+              <>
+                <div className="bg-pink-50 border border-pink-100 rounded-xl p-4 mb-5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <IgIcon className="w-4 h-4 text-[#E1306C]" />
+                    <span className="text-[13px] font-semibold text-[#E1306C]">Instagram del profesor</span>
+                  </div>
+                  <p className="text-[20px] font-bold text-neutral-900">{cls.teacher.instagram}</p>
+                </div>
+                <a
+                  href={`https://instagram.com/${instagramHandle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={onClose}
+                  className="w-full flex items-center justify-center gap-2 bg-[#E1306C] hover:bg-[#c9225a] text-white font-bold py-3.5 rounded-btn transition-colors"
+                >
+                  <IgIcon className="w-5 h-5" />
+                  Abrir Instagram
+                </a>
+              </>
+            ) : (
+              <>
+                <div className="bg-green-bg border border-green-bg rounded-xl p-4 mb-5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Phone className="w-4 h-4 text-green-text" />
+                    <span className="text-[13px] font-semibold text-green-text">WhatsApp del profesor</span>
+                  </div>
+                  <p className="text-[20px] font-bold text-neutral-900">{cls.teacher.whatsapp}</p>
+                </div>
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={onClose}
+                  className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20BC5A] text-white font-bold py-3.5 rounded-btn transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Abrir WhatsApp
+                </a>
+              </>
+            )}
           </div>
         )}
       </div>

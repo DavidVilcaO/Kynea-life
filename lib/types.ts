@@ -1,13 +1,13 @@
 export type ClassStatus = 'published' | 'draft' | 'finished' | 'archived';
-export type ClassType = 'clase' | 'taller' | 'curso' | 'masterclass' | 'intensivo';
+export type ClassType = 'clase' | 'taller' | 'curso' | 'masterclass' | 'evento' | 'clase-suelta';
 export type DanceStyle =
   | 'Salsa' | 'Bachata' | 'Ballet' | 'Breakdance' | 'Cha-cha-chá'
   | 'Contemporáneo' | 'Dancehall' | 'Folklore' | 'Heels' | 'Hip Hop'
   | 'House' | 'Jazz' | 'Jazz Funk' | 'K-pop' | 'Reggaetón'
   | 'Tango' | 'Urbano' | 'Zumba' | 'Acroverticales';
-export type Level = 'Inicial' | 'Básico' | 'Intermedio' | 'Avanzado' | 'Todos los niveles';
-export type Modality = 'Presencial' | 'Online' | 'Híbrida';
-export type PriceType = 'Gratis' | 'Por clase' | 'Mensual' | 'Paquete' | 'Precio único';
+export type Level = 'Iniciantes' | 'Principiantes' | 'Básico' | 'Intermedio' | 'Avanzado' | 'Todos los niveles';
+export type Modality = 'Presencial' | 'Online';
+export type PriceType = 'Gratis' | 'Por clase' | 'Mensual' | 'Paquete';
 
 export interface Teacher {
   id: string;
@@ -60,6 +60,7 @@ export interface DanceClass {
 
   priceType: PriceType;
   price: number;
+  offerPrice?: number;
   currency: string;
   maxSpots?: number;
   availableSpots?: number;
@@ -88,6 +89,7 @@ export interface DanceClass {
   toBring?: string[];
   ageGroup?: string;
   prerequisites?: string;
+  contactMode?: 'whatsapp' | 'instagram' | 'ambos';
 
   status: ClassStatus;
   teacher: Teacher;
