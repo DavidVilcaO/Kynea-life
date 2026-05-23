@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { MapPin, Clock, Users, Calendar, MessageCircle, Bookmark, ChevronLeft, Star, Globe, Camera, Video } from 'lucide-react';
 import Header from '@/components/Header';
 import ContactModal from '@/components/ContactModal';
-import { getTypeLabel, formatPrice, formatTimeSlots } from '@/lib/mockData';
+import { getTypeLabel, formatPrice, formatTimeSlots, buildWhatsAppMessage } from '@/lib/mockData';
 import type { DanceClass } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 
@@ -49,7 +49,17 @@ export default function ClaseDetailClient({ cls }: { cls: DanceClass }) {
   const handleContactClick = async () => {
     const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
-    setIsLoggedIn(!!session?.user);
+    const loggedIn = !!session?.user;
+    setIsLoggedIn(loggedIn);
+
+    // Logged in + teacher has WhatsApp → open WhatsApp directly in new tab
+    if (loggedIn && cls.teacher.whatsapp) {
+      const url = buildWhatsAppMessage(cls.style, cls.startDate, cls.teacher.whatsapp, cls.title);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    // Otherwise show modal (registration gate OR "no whatsapp" notice)
     setShowContact(true);
   };
 
