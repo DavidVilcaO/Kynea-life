@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { MapPin, Clock, MessageCircle, Bookmark, Users } from 'lucide-react';
 import { DanceClass } from '@/lib/types';
-import { getTypeLabel, formatPrice, formatTimeSlots } from '@/lib/mockData';
+import { getTypeLabel, formatPrice, formatTimeSlots, buildWhatsAppMessage } from '@/lib/mockData';
+import { createClient } from '@/lib/supabase/client';
 import ContactModal from './ContactModal';
 
 interface ClassCardProps {
@@ -14,10 +15,35 @@ interface ClassCardProps {
 export default function ClassCard({ cls, compact = false }: ClassCardProps) {
   const [showContact, setShowContact] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => setIsLoggedIn(!!data.user));
+  }, []);
 
   const spotsLeft = cls.availableSpots;
   const isFullyBooked = spotsLeft === 0;
   const isAlmostFull = spotsLeft !== undefined && spotsLeft <= 3 && spotsLeft > 0;
+
+  function handleContact() {
+    if (isFullyBooked) return;
+    if (!isLoggedIn) {
+      setShowContact(true);
+      return;
+    }
+    const mode = cls.contactMode ?? 'whatsapp';
+    if ((mode === 'whatsapp' || mode === 'ambos') && cls.teacher.whatsapp) {
+      window.open(buildWhatsAppMessage(cls.style, cls.startDate, cls.teacher.whatsapp, cls.title), '_blank');
+      return;
+    }
+    if ((mode === 'instagram' || mode === 'ambos') && cls.teacher.instagram) {
+      const handle = cls.teacher.instagram.replace(/^@/, '');
+      window.open(`https://instagram.com/${handle}`, '_blank');
+      return;
+    }
+    // Logged in but teacher has no contact configured
+    setShowContact(true);
+  }
 
   return (
     <>
@@ -90,7 +116,7 @@ export default function ClassCard({ cls, compact = false }: ClassCardProps) {
             )}
           </div>
 
-          {/* Actions — Familia B: sobre fondo blanco → rounded-btn */}
+          {/* Actions */}
           <div className="flex gap-2 mt-auto pt-1">
             <Link
               href={`/clases/${cls.id}`}
@@ -99,7 +125,7 @@ export default function ClassCard({ cls, compact = false }: ClassCardProps) {
               Ver clase
             </Link>
             <button
-              onClick={() => setShowContact(true)}
+              onClick={handleContact}
               disabled={isFullyBooked}
               className={`flex-1 text-[13px] font-semibold py-2.5 rounded-btn transition-all flex items-center justify-center gap-1.5 border-2 ${
                 isFullyBooked
@@ -115,7 +141,12 @@ export default function ClassCard({ cls, compact = false }: ClassCardProps) {
       </div>
 
       {showContact && (
-        <ContactModal cls={cls} onClose={() => setShowContact(false)} isLoggedIn={false} />
+        <ContactModal
+          cls={cls}
+          onClose={() => setShowContact(false)}
+          isLoggedIn={isLoggedIn}
+          contactType={cls.contactMode === 'instagram' ? 'instagram' : 'whatsapp'}
+        />
       )}
     </>
   );

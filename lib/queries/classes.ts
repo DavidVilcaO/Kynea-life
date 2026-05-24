@@ -8,7 +8,7 @@ import type {
 // Keeps all existing UI components working without changes.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapTeacher(t: any): Teacher {
+export function mapTeacher(t: any): Teacher {
   return {
     id:           t.id,
     name:         t.name,
@@ -176,6 +176,20 @@ export async function fetchSavedClasses(userId: string): Promise<DanceClass[]> {
   return (data ?? [])
     .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
     .map(mapDbClassToType);
+}
+
+export async function fetchFeaturedProfiles(role: 'profesor' | 'academia', limit = 4): Promise<Teacher[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, name, role, photo_url, city, district, bio, years_experience, whatsapp, instagram, dance_styles, rating, total_classes')
+    .eq('role', role)
+    .limit(limit);
+  if (error) {
+    console.error('fetchFeaturedProfiles error:', error.message);
+    return [];
+  }
+  return (data ?? []).map(mapTeacher);
 }
 
 export async function fetchTeacherClasses(teacherId: string): Promise<DanceClass[]> {
