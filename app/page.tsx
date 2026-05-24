@@ -410,10 +410,10 @@ export default function HomePage() {
                 {/* Content: icon top-left, name bottom-left */}
                 <div className="relative z-10 p-4 h-full flex flex-col justify-between">
                   <img
-                    src="/dancer-icon.svg"
+                    src="/Icon-categorias.png"
                     alt=""
                     aria-hidden="true"
-                    className="w-11 h-[54px] object-contain self-start"
+                    className="w-12 h-12 object-contain self-start"
                   />
                   <p className="text-[17px] font-black text-neutral-900 tracking-tight leading-none">
                     {cat.name}
