@@ -42,7 +42,15 @@ export default function RegistroPage() {
     }
 
     router.refresh();
-    router.push(role === 'alumno' ? '/clases' : '/dashboard');
+    router.push(role === 'alumno' ? '/clases' : '/onboarding');
+  }
+
+  async function handleGoogle() {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
   }
 
   return (
@@ -93,7 +101,7 @@ export default function RegistroPage() {
                   Continuar
                 </button>
 
-                <button className="w-full btn-outline">
+                <button type="button" onClick={handleGoogle} className="w-full btn-outline">
                   <Globe className="w-4 h-4" />
                   Continuar con Google
                 </button>
