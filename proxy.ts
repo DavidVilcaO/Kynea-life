@@ -37,8 +37,8 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect /dashboard routes — redirect to /login if not authenticated
-  if (request.nextUrl.pathname.startsWith('/dashboard') && !user) {
+  // Protect /dashboard and /onboarding — redirect to /login if not authenticated
+  if ((request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/onboarding')) && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/login';
     return NextResponse.redirect(redirectUrl);

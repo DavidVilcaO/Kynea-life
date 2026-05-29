@@ -1,9 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ChevronRight, ChevronLeft, Check, Upload } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check, Upload, Loader2 } from 'lucide-react';
 import { DANCE_STYLES } from '@/lib/mockData';
+import { createClient } from '@/lib/supabase/client';
+import { updateProfile } from '@/lib/actions/classes';
 
 const STEPS = [
   'Tipo de perfil',
@@ -36,14 +38,57 @@ export default function OnboardingPage() {
     rulesAccepted: false,
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
   const set = (key: keyof typeof form, val: unknown) => setForm(f => ({ ...f, [key]: val }));
 
   const toggleStyle = (s: string) => {
     set('styles', form.styles.includes(s) ? form.styles.filter(x => x !== s) : [...form.styles, s]);
   };
 
-  const next = () => step < STEPS.length - 1 ? setStep(s => s + 1) : router.push('/dashboard');
+  useEffect(() => {
+    createClient()
+      .from('profiles')
+      .select('role')
+      .single()
+      .then(({ data }) => {
+        if (data?.role) {
+          set('profileType', data.role);
+          setStep(1);
+        }
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const next = () => setStep(s => s + 1);
   const back = () => step > 0 && setStep(s => s - 1);
+
+  async function handleFinish() {
+    setLoading(true);
+    setError('');
+    try {
+      const yearsMap: Record<string, number> = { '1-2': 1, '3-5': 3, '5-10': 5, '10+': 10 };
+      const expKey = form.experience ? form.experience.split(' ')[0] : '';
+      await updateProfile({
+        name:             form.publicName || undefined,
+        bio:              form.bio || undefined,
+        city:             form.city || undefined,
+        district:         form.district || undefined,
+        whatsapp:         form.whatsapp || undefined,
+        instagram:        form.instagram || undefined,
+        tiktok:           form.tiktok || undefined,
+        youtube:          form.youtube || undefined,
+        website:          form.website || undefined,
+        dance_styles:     form.styles.length ? form.styles : undefined,
+        years_experience: expKey ? yearsMap[expKey] : undefined,
+      });
+      router.push('/dashboard');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error al guardar perfil');
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-4 py-12">
@@ -249,59 +294,54 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 4: Validation */}
+          {/* Step 4: Confirmation */}
           {step === 4 && (
             <div>
-              <h2 className="text-xl font-black text-neutral-900 mb-2">Validación</h2>
-              <p className="text-sm text-neutral-500 mb-6">Último paso: confirma tus datos</p>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-xl">
-                  <div>
-                    <p className="text-sm font-semibold text-neutral-900">Confirmar correo</p>
-                    <p className="text-xs text-neutral-500">Te enviamos un código a tu email</p>
+              <h2 className="text-xl font-black text-neutral-900 mb-2">Confirmar y guardar</h2>
+              <p className="text-sm text-neutral-500 mb-6">Revisa tu información antes de guardar</p>
+              <div className="space-y-3">
+                {form.publicName && (
+                  <div className="flex justify-between p-3 bg-neutral-50 rounded-xl text-sm">
+                    <span className="text-neutral-500">Nombre</span>
+                    <span className="font-semibold text-neutral-900">{form.publicName}</span>
                   </div>
-                  <button
-                    onClick={() => set('emailVerified', !form.emailVerified)}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${
-                      form.emailVerified
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                    }`}
-                  >
-                    {form.emailVerified ? '✓ Verificado' : 'Verificar'}
-                  </button>
-                </div>
-                <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-xl">
-                  <div>
-                    <p className="text-sm font-semibold text-neutral-900">Confirmar celular</p>
-                    <p className="text-xs text-neutral-500">Te enviamos un SMS de verificación</p>
+                )}
+                {form.city && (
+                  <div className="flex justify-between p-3 bg-neutral-50 rounded-xl text-sm">
+                    <span className="text-neutral-500">Ubicación</span>
+                    <span className="font-semibold text-neutral-900">{[form.district, form.city].filter(Boolean).join(', ')}</span>
                   </div>
-                  <button
-                    onClick={() => set('phoneVerified', !form.phoneVerified)}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${
-                      form.phoneVerified
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                    }`}
-                  >
-                    {form.phoneVerified ? '✓ Verificado' : 'Verificar'}
-                  </button>
-                </div>
-                <label className="flex items-start gap-3 cursor-pointer p-4 border border-neutral-200 rounded-xl">
-                  <input
-                    type="checkbox"
-                    checked={form.rulesAccepted}
-                    onChange={e => set('rulesAccepted', e.target.checked)}
-                    className="mt-1 accent-neutral-900"
-                  />
-                  <span className="text-sm text-neutral-600">
-                    Acepto las <span className="text-neutral-900 underline cursor-pointer">reglas de publicación</span> de Kynea y me comprometo a mantener mis clases actualizadas.
-                  </span>
-                </label>
+                )}
+                {form.styles.length > 0 && (
+                  <div className="flex justify-between p-3 bg-neutral-50 rounded-xl text-sm">
+                    <span className="text-neutral-500">Estilos</span>
+                    <span className="font-semibold text-neutral-900">{form.styles.join(', ')}</span>
+                  </div>
+                )}
+                {form.whatsapp && (
+                  <div className="flex justify-between p-3 bg-neutral-50 rounded-xl text-sm">
+                    <span className="text-neutral-500">WhatsApp</span>
+                    <span className="font-semibold text-neutral-900">{form.whatsapp}</span>
+                  </div>
+                )}
               </div>
-              <div className="mt-6 p-4 bg-neutral-50 rounded-xl">
+              <label className="flex items-start gap-3 cursor-pointer p-4 border border-neutral-200 rounded-xl mt-4">
+                <input
+                  type="checkbox"
+                  checked={form.rulesAccepted}
+                  onChange={e => set('rulesAccepted', e.target.checked)}
+                  className="mt-1 accent-neutral-900"
+                />
+                <span className="text-sm text-neutral-600">
+                  Acepto las <span className="text-neutral-900 underline cursor-pointer">reglas de publicación</span> de Kynea y me comprometo a mantener mis clases actualizadas.
+                </span>
+              </label>
+              {error && (
+                <p className="mt-3 text-xs text-red-600 font-medium">{error}</p>
+              )}
+              <div className="mt-4 p-4 bg-neutral-50 rounded-xl">
                 <p className="text-sm font-semibold text-neutral-900 mb-1">🎉 ¡Ya casi!</p>
-                <p className="text-xs text-neutral-600">Al completar el registro podrás publicar tu primera clase.</p>
+                <p className="text-xs text-neutral-600">Al guardar tu perfil podrás publicar tu primera clase.</p>
               </div>
             </div>
           )}
@@ -317,11 +357,13 @@ export default function OnboardingPage() {
               </button>
             )}
             <button
-              onClick={next}
-              className="flex-1 flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-700 text-white font-bold py-3 rounded-btn transition-colors"
+              onClick={step === STEPS.length - 1 ? handleFinish : next}
+              disabled={loading}
+              className="flex-1 flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-700 text-white font-bold py-3 rounded-btn transition-colors disabled:opacity-60"
             >
-              {step === STEPS.length - 1 ? 'Ir a mi dashboard' : 'Continuar'}
-              <ChevronRight className="w-4 h-4" />
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading ? 'Guardando…' : step === STEPS.length - 1 ? 'Guardar y entrar' : 'Continuar'}
+              {!loading && <ChevronRight className="w-4 h-4" />}
             </button>
           </div>
         </div>
