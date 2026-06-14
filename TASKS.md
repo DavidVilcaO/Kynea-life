@@ -339,15 +339,7 @@ create trigger on_class_status_change
   for each row execute function update_teacher_total_classes();
 ```
 
-### 11.4 Rating vacío en la UI
-`profiles.rating` existe y se pinta (estrella) en perfiles y cards, pero **nunca tiene
-valor** y por ahora **no habrá sistema de reseñas** (no existe una forma de que el usuario
-valore sin un punto de conexión dentro de la app; las negociaciones ocurren fuera).
-**Tarea:** ocultar/quitar la estrella de rating de la UI hasta que exista un mecanismo
-real. Buscar usos de `rating` en `components/ClassCard.tsx`,
-`app/profesores/[id]/ProfesorDetailClient.tsx` y el dashboard.
-
-### 11.5 `app/dashboard/configuracion/page.tsx` mock
+### 11.4 `app/dashboard/configuracion/page.tsx` mock
 Ver sección 9.
 
 ### 11.6 `lib/mockData.ts` en producción
@@ -387,12 +379,11 @@ Instalar **Sentry**. Hoy los `catch` de los server actions solo hacen `console.e
 | 🟡 6 | **4.2 Google Maps autocomplete (lat/lng)** | Medio | Habilita el mapa |
 | 🟡 7 | **2.1 / 3.1 Onboarding y perfil del alumno** | Medio | Experiencia del alumno |
 | 🟡 8 | **5.2 Paginación del catálogo** | Pequeño | Escalabilidad |
-| 🟢 9 | **11.4 Quitar rating vacío de la UI** | Pequeño | Pulido |
-| 🟢 10 | **1.2 Google OAuth (config)** | Pequeño | Conversión de registro |
-| 🟢 11 | **8.1 Roster de profesores de academia** | Grande | Feature de academia |
-| 🟢 12 | **9 Cambio de contraseña / eliminar cuenta** | Pequeño | Completitud |
-| 🟢 13 | **5.1 / 5.3 Filtros y SEO** | Pequeño | Tráfico y UX |
-| 🟢 14 | **4.4 Importación CSV** | Grande | Eficiencia academia |
+| 🟢 9 | **1.2 Google OAuth (config)** | Pequeño | Conversión de registro |
+| 🟢 10 | **8.1 Roster de profesores de academia** | Grande | Feature de academia |
+| 🟢 11 | **9 Cambio de contraseña / eliminar cuenta** | Pequeño | Completitud |
+| 🟢 12 | **5.1 / 5.3 Filtros y SEO** | Pequeño | Tráfico y UX |
+| 🟢 13 | **4.4 Importación CSV** | Grande | Eficiencia academia |
 
 ---
 
